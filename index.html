@@ -27,8 +27,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);
 #stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
 .star{position:absolute;background:#fff;border-radius:50%;animation:twinkle linear infinite}
 @keyframes twinkle{0%,100%{opacity:.1}50%{opacity:.9}}
-@keyframes shoot{0%{transform:translateX(0) translateY(0) rotate(-30deg);opacity:1}
-  100%{transform:translateX(-400px) translateY(400px) rotate(-30deg);opacity:0}}
 
 /* ===================== LAYOUT ===================== */
 #app{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
@@ -47,6 +45,18 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);
 .sb-player.me{border-color:var(--gold);background:rgba(255,215,0,.12)}
 .sb-avatar{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:900;flex-shrink:0}
 .sb-score{font-family:'Orbitron',monospace;font-size:.8rem;color:var(--gold)}
+.streak-icon{font-size:.9rem;animation:streakPop .4s cubic-bezier(.17,.67,.38,1.3)}
+@keyframes streakPop{from{transform:scale(0)}to{transform:scale(1)}}
+.streak-fire{color:#FF6B2B;filter:drop-shadow(0 0 4px rgba(255,107,43,.6))}
+.streak-water{color:#45B7D1;filter:drop-shadow(0 0 4px rgba(69,183,209,.6))}
+.double-pts{font-size:.65rem;padding:1px 5px;border-radius:8px;font-weight:700;margin-left:3px}
+.double-pts.fire{background:rgba(255,107,43,.2);color:#FF6B2B;border:1px solid rgba(255,107,43,.4)}
+.double-pts.water{background:rgba(69,183,209,.2);color:#45B7D1;border:1px solid rgba(69,183,209,.4)}
+
+/* ===================== TRICK BADGE ===================== */
+.trick-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;
+  font-size:.7rem;font-weight:700;background:rgba(255,77,184,.15);border:1px solid rgba(255,77,184,.4);
+  color:var(--pink);margin-bottom:6px;animation:fadeIn .3s ease}
 
 /* ===================== TYPOGRAPHY ===================== */
 h1{font-family:'Orbitron',monospace;font-size:clamp(1.6rem,5vw,2.8rem);font-weight:900;
@@ -61,13 +71,11 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
   padding:12px 28px;border-radius:var(--r);border:none;cursor:pointer;
   font-family:'Exo 2',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.03em;
   transition:all .2s;position:relative;overflow:hidden;white-space:nowrap}
-.btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.07);
-  opacity:0;transition:.2s}.btn:hover::after{opacity:1}
-.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;
-  box-shadow:0 0 20px rgba(255,215,0,.4)}
+.btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.07);opacity:0;transition:.2s}
+.btn:hover::after{opacity:1}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;box-shadow:0 0 20px rgba(255,215,0,.4)}
 .btn-gold:hover{transform:translateY(-2px);box-shadow:0 0 30px rgba(255,215,0,.6)}
-.btn-cyan{background:linear-gradient(135deg,var(--cyan),#0099cc);color:#000;
-  box-shadow:0 0 20px rgba(0,229,255,.3)}
+.btn-cyan{background:linear-gradient(135deg,var(--cyan),#0099cc);color:#000;box-shadow:0 0 20px rgba(0,229,255,.3)}
 .btn-outline{background:transparent;color:var(--text2);border:1px solid var(--border);font-size:.85rem;padding:8px 18px}
 .btn-outline:hover{border-color:var(--gold);color:var(--gold)}
 .btn-danger{background:linear-gradient(135deg,var(--red),#cc0033);color:#fff}
@@ -99,27 +107,20 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
 .home-card{width:100%;max-width:420px}
 .home-card .input-group{display:flex;flex-direction:column;gap:12px}
 .home-card .input-row{display:flex;gap:8px}
-.firebase-notice{font-size:.75rem;color:var(--text3);text-align:center;padding:8px 12px;
-  background:rgba(255,100,0,.1);border:1px solid rgba(255,100,0,.3);border-radius:8px;margin-top:8px}
-.firebase-notice a{color:var(--gold);text-decoration:none}
 
 /* ===================== SCREEN: SETUP ===================== */
 #screen-setup{gap:16px}
 #screen-setup .setup-steps{list-style:none;display:flex;flex-direction:column;gap:10px;width:100%}
-#screen-setup .setup-steps li{display:flex;gap:10px;align-items:flex-start;padding:10px;
-  background:var(--card);border-radius:var(--r)}
-.step-num{width:28px;height:28px;min-width:28px;background:var(--gold);color:#000;
-  border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem}
+#screen-setup .setup-steps li{display:flex;gap:10px;align-items:flex-start;padding:10px;background:var(--card);border-radius:var(--r)}
+.step-num{width:28px;height:28px;min-width:28px;background:var(--gold);color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem}
 .step-text{font-size:.85rem;color:var(--text2);line-height:1.5}
 .step-text code{color:var(--cyan);background:rgba(0,229,255,.1);padding:1px 6px;border-radius:4px;font-size:.8rem}
 .setup-inp{width:100%;font-size:.8rem}
 
 /* ===================== SCREEN: LOBBY ===================== */
-.room-code-display{font-family:'Orbitron',monospace;font-size:2.5rem;font-weight:900;
-  color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,.6);letter-spacing:.2em}
+.room-code-display{font-family:'Orbitron',monospace;font-size:2.5rem;font-weight:900;color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,.6);letter-spacing:.2em}
 .lobby-players{width:100%;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.lobby-player{display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--r);
-  border:1.5px solid var(--border);background:var(--card);transition:.3s}
+.lobby-player{display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--card);transition:.3s}
 .lobby-player.me{border-color:var(--gold);background:rgba(255,215,0,.08)}
 .lobby-player .p-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;flex-shrink:0}
 .lobby-player .p-name{font-weight:700;font-size:.95rem}
@@ -132,75 +133,48 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
 
 /* ===================== SCREEN: DRAW ===================== */
 #screen-draw{gap:20px}
-.draw-wheel{width:280px;height:280px;border-radius:50%;border:3px solid var(--gold);
-  display:flex;align-items:center;justify-content:center;flex-direction:column;
-  background:radial-gradient(circle,var(--card2),var(--bg2));
-  box-shadow:0 0 50px rgba(255,215,0,.3);position:relative;overflow:hidden}
-.draw-wheel::before{content:'';position:absolute;inset:-2px;border-radius:50%;
-  background:conic-gradient(var(--gold),var(--cyan),var(--pink),var(--gold));
-  z-index:-1;animation:spinRing 3s linear infinite}
+.draw-wheel{width:280px;height:280px;border-radius:50%;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(circle,var(--card2),var(--bg2));box-shadow:0 0 50px rgba(255,215,0,.3);position:relative;overflow:hidden}
+.draw-wheel::before{content:'';position:absolute;inset:-2px;border-radius:50%;background:conic-gradient(var(--gold),var(--cyan),var(--pink),var(--gold));z-index:-1;animation:spinRing 3s linear infinite}
 @keyframes spinRing{to{transform:rotate(360deg)}}
-.draw-name{font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:700;
-  text-align:center;padding:0 20px;transition:.05s}
+.draw-name{font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:700;text-align:center;padding:0 20px;transition:.05s}
 .draw-result{width:100%;display:flex;flex-direction:column;gap:8px}
-.draw-result-item{display:flex;align-items:center;gap:12px;padding:10px 16px;
-  border-radius:var(--r);border:1px solid var(--border);background:var(--card);
-  animation:slideIn .4s ease}
+.draw-result-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:var(--r);border:1px solid var(--border);background:var(--card);animation:slideIn .4s ease}
 @keyframes slideIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
-.draw-position{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;
-  width:36px;text-align:center}
+.draw-position{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;width:36px;text-align:center}
 
 /* ===================== SCREEN: THEME ===================== */
 #screen-theme{gap:16px}
 .round-info-bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:4px}
-.round-badge{padding:4px 14px;border-radius:20px;font-size:.8rem;font-weight:700;
-  background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.4);color:var(--gold);
-  font-family:'Orbitron',monospace}
+.round-badge{padding:4px 14px;border-radius:20px;font-size:.8rem;font-weight:700;background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.4);color:var(--gold);font-family:'Orbitron',monospace}
 .theme-picker-msg{font-size:1rem;color:var(--cyan);text-align:center;font-weight:600}
 .theme-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%}
 @media(min-width:500px){.theme-grid{grid-template-columns:repeat(4,1fr)}}
-.theme-card{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:6px;padding:16px 8px;border-radius:var(--r);border:1.5px solid var(--border);
-  background:var(--card);cursor:pointer;transition:all .2s;min-height:80px}
-.theme-card:hover:not(.disabled){border-color:var(--gold);background:rgba(255,215,0,.1);
-  transform:translateY(-2px);box-shadow:0 0 15px rgba(255,215,0,.2)}
+.theme-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px 8px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--card);cursor:pointer;transition:all .2s;min-height:80px}
+.theme-card:hover:not(.disabled){border-color:var(--gold);background:rgba(255,215,0,.1);transform:translateY(-2px);box-shadow:0 0 15px rgba(255,215,0,.2)}
 .theme-card.disabled{opacity:.35;cursor:not-allowed}
 .theme-card.last-used{border-color:rgba(255,100,0,.5);cursor:not-allowed}
 .theme-card .t-icon{font-size:2rem}
 .theme-card .t-name{font-size:.75rem;font-weight:700;text-align:center;color:var(--text2)}
-.waiting-msg{color:var(--text3);font-size:.9rem;text-align:center;
-  padding:16px;border:1px dashed var(--border);border-radius:var(--r);width:100%}
+.waiting-msg{color:var(--text3);font-size:.9rem;text-align:center;padding:16px;border:1px dashed var(--border);border-radius:var(--r);width:100%}
 
 /* ===================== SCREEN: QUESTION ===================== */
 #screen-question{gap:12px;padding-top:56px}
 .q-meta{display:flex;align-items:center;justify-content:space-between;width:100%;flex-wrap:wrap;gap:6px}
-.q-theme-badge{display:flex;align-items:center;gap:6px;padding:4px 12px;
-  border-radius:20px;font-size:.8rem;font-weight:700;background:var(--card);border:1px solid var(--border)}
+.q-theme-badge{display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:.8rem;font-weight:700;background:var(--card);border:1px solid var(--border)}
 .q-progress{font-size:.8rem;color:var(--text3)}
-
-/* TIMER */
 .timer-wrap{position:relative;width:80px;height:80px;flex-shrink:0}
 .timer-svg{transform:rotate(-90deg)}
 .timer-bg{fill:none;stroke:var(--card2);stroke-width:6}
-.timer-ring{fill:none;stroke:var(--cyan);stroke-width:6;stroke-linecap:round;
-  stroke-dasharray:220;stroke-dashoffset:0;transition:stroke .5s,stroke-dashoffset .1s linear}
+.timer-ring{fill:none;stroke:var(--cyan);stroke-width:6;stroke-linecap:round;stroke-dasharray:220;stroke-dashoffset:0;transition:stroke .5s,stroke-dashoffset .1s linear}
 .timer-ring.urgent{stroke:var(--red);animation:pulse .5s ease infinite alternate}
 @keyframes pulse{from{filter:none}to{filter:drop-shadow(0 0 6px var(--red))}}
-.timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:700}
+.timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:700}
 .q-row{display:flex;align-items:center;gap:12px;width:100%}
-.q-text{flex:1;font-size:clamp(.95rem,2.5vw,1.1rem);font-weight:600;line-height:1.5;
-  padding:14px;background:var(--card);border-radius:var(--r);border-left:3px solid var(--gold)}
+.q-text{flex:1;font-size:clamp(.95rem,2.5vw,1.1rem);font-weight:600;line-height:1.5;padding:14px;background:var(--card);border-radius:var(--r);border-left:3px solid var(--gold)}
 .options-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
-.option-btn{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--r);
-  border:1.5px solid var(--border);background:var(--card);cursor:pointer;
-  font-family:'Exo 2',sans-serif;font-size:.9rem;font-weight:600;color:var(--text);
-  transition:all .2s;text-align:left;min-height:54px}
-.option-btn:hover:not(:disabled){border-color:var(--cyan);background:rgba(0,229,255,.1);
-  transform:translateY(-1px)}
-.option-btn .opt-letter{width:26px;height:26px;min-width:26px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;background:var(--card2);
-  font-weight:700;font-size:.8rem;color:var(--text2);transition:.2s}
+.option-btn{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--card);cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.9rem;font-weight:600;color:var(--text);transition:all .2s;text-align:left;min-height:54px}
+.option-btn:hover:not(:disabled){border-color:var(--cyan);background:rgba(0,229,255,.1);transform:translateY(-1px)}
+.option-btn .opt-letter{width:26px;height:26px;min-width:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--card2);font-weight:700;font-size:.8rem;color:var(--text2);transition:.2s}
 .option-btn.selected .opt-letter{background:var(--cyan);color:#000}
 .option-btn.selected{border-color:var(--cyan);background:rgba(0,229,255,.12)}
 .option-btn:disabled{cursor:not-allowed}
@@ -209,8 +183,7 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
 .option-btn.wrong{border-color:var(--red)!important;background:rgba(255,51,85,.12)!important}
 .option-btn.wrong .opt-letter{background:var(--red);color:#fff}
 .players-status{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%}
-.ps-player{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;
-  font-size:.75rem;background:var(--card);border:1px solid var(--border);transition:.3s}
+.ps-player{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:.75rem;background:var(--card);border:1px solid var(--border);transition:.3s}
 .ps-player.answered{border-color:var(--green);background:rgba(0,255,136,.1)}
 .ps-player .ps-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:.3s}
 .ps-player.answered .ps-dot{background:var(--green)}
@@ -221,14 +194,12 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
 .result-header{font-size:1.5rem;font-weight:900;text-align:center;font-family:'Orbitron',monospace}
 .result-header.correct{color:var(--green);text-shadow:0 0 20px rgba(0,255,136,.5)}
 .result-header.wrong{color:var(--red);text-shadow:0 0 20px rgba(255,51,85,.5)}
-.correct-answer-box{padding:12px 18px;border-radius:var(--r);border:1.5px solid var(--green);
-  background:rgba(0,255,136,.08);text-align:center;font-size:.9rem;width:100%}
+.correct-answer-box{padding:12px 18px;border-radius:var(--r);border:1.5px solid var(--green);background:rgba(0,255,136,.08);text-align:center;font-size:.9rem;width:100%}
 .correct-answer-box .ca-label{color:var(--text3);font-size:.75rem;margin-bottom:4px}
 .correct-answer-box .ca-text{font-weight:700;color:var(--green)}
 .player-answers-grid{display:flex;flex-direction:column;gap:8px;width:100%}
-.pa-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r);
-  background:var(--card);border:1px solid var(--border)}
-.pa-name{flex:1;font-size:.9rem;font-weight:600}
+.pa-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r);background:var(--card);border:1px solid var(--border)}
+.pa-name{flex:1;font-size:.9rem;font-weight:600;display:flex;align-items:center;gap:4px}
 .pa-answer{font-size:.85rem;color:var(--text2);flex:1}
 .pa-delta{font-family:'Orbitron',monospace;font-size:.9rem;font-weight:700;min-width:36px;text-align:right}
 .pa-delta.pos{color:var(--green)}.pa-delta.neg{color:var(--red)}.pa-delta.neutral{color:var(--text3)}
@@ -238,101 +209,78 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
 
 /* ===================== SCREEN: ROUND SUMMARY ===================== */
 #screen-round-summary{gap:14px;padding-top:66px}
-.round-summary-title{text-align:center;font-size:.85rem;color:var(--text3);
-  font-family:'Orbitron',monospace;letter-spacing:.1em}
+.round-summary-title{text-align:center;font-size:.85rem;color:var(--text3);font-family:'Orbitron',monospace;letter-spacing:.1em}
 .scoreboard{width:100%;display:flex;flex-direction:column;gap:8px}
-.sb-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--r);
-  background:var(--card);border:1px solid var(--border);transition:.3s}
-.sb-row.rank-1{border-color:var(--gold);background:rgba(255,215,0,.08);order:1}
-.sb-row.rank-2{border-color:rgba(192,192,192,.5);background:rgba(192,192,192,.05);order:2}
-.sb-row.rank-3{border-color:rgba(205,127,50,.5);background:rgba(205,127,50,.05);order:3}
+.sb-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--r);background:var(--card);border:1px solid var(--border);transition:.3s}
+.sb-row.rank-1{border-color:var(--gold);background:rgba(255,215,0,.08)}
+.sb-row.rank-2{border-color:rgba(192,192,192,.5);background:rgba(192,192,192,.05)}
+.sb-row.rank-3{border-color:rgba(205,127,50,.5);background:rgba(205,127,50,.05)}
 .sb-row.me{outline:2px solid var(--cyan);outline-offset:2px}
 .sb-rank{font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;width:30px;text-align:center}
 .rank-1 .sb-rank{color:var(--gold)}.rank-2 .sb-rank{color:#C0C0C0}.rank-3 .sb-rank{color:#CD7F32}
-.sb-pname{flex:1;font-weight:700}
+.sb-pname{flex:1;font-weight:700;display:flex;align-items:center;gap:6px}
 .sb-pscore{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:var(--gold)}
 
 /* ===================== SCREEN: FINAL ===================== */
 #screen-final{gap:16px;padding-top:20px;padding-bottom:20px}
-.final-title{font-family:'Orbitron',monospace;font-size:clamp(1.1rem,4vw,1.8rem);font-weight:900;
-  text-align:center;background:linear-gradient(135deg,var(--gold),var(--gold2),var(--pink));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.final-title{font-family:'Orbitron',monospace;font-size:clamp(1.1rem,4vw,1.8rem);font-weight:900;text-align:center;background:linear-gradient(135deg,var(--gold),var(--gold2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:8px;width:100%;margin:10px 0}
 .podium-item{display:flex;flex-direction:column;align-items:center;gap:6px}
-.podium-player-name{font-size:.8rem;font-weight:700;text-align:center;max-width:80px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.podium-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;
-  justify-content:center;font-size:1.2rem;font-weight:900;border:2px solid transparent}
+.podium-player-name{font-size:.8rem;font-weight:700;text-align:center;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.podium-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:900;border:2px solid transparent}
 .podium-item.rank-1 .podium-avatar{border-color:var(--gold);box-shadow:0 0 15px rgba(255,215,0,.5)}
 .podium-item.rank-2 .podium-avatar{border-color:#C0C0C0;box-shadow:0 0 10px rgba(192,192,192,.3)}
 .podium-item.rank-3 .podium-avatar{border-color:#CD7F32;box-shadow:0 0 10px rgba(205,127,50,.3)}
-.podium-block{border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;
-  font-family:'Orbitron',monospace;font-weight:900;font-size:1.4rem;width:80px}
+.podium-block{border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-weight:900;font-size:1.4rem;width:80px}
 .podium-item.rank-1 .podium-block{height:90px;background:linear-gradient(to bottom,#FFD700,#FFA500);color:#000}
 .podium-item.rank-2 .podium-block{height:65px;background:linear-gradient(to bottom,#C0C0C0,#909090);color:#000}
 .podium-item.rank-3 .podium-block{height:45px;background:linear-gradient(to bottom,#CD7F32,#8B4513);color:#fff}
 .podium-score{font-family:'Orbitron',monospace;font-size:.75rem;color:var(--text3)}
 .final-ranking{width:100%;display:flex;flex-direction:column;gap:6px}
-.final-row{display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:var(--r);
-  background:var(--card);border:1px solid var(--border);font-size:.9rem}
+.final-row{display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:var(--r);background:var(--card);border:1px solid var(--border);font-size:.9rem}
 .final-row.me{border-color:var(--cyan)}
 .final-pos{font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;width:28px;color:var(--text3)}
 .final-pname{flex:1;font-weight:600}
 .final-pscore{font-family:'Orbitron',monospace;font-size:.9rem;font-weight:700;color:var(--gold)}
 .confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:200;overflow:hidden}
 .confetti{position:absolute;top:-10px;width:10px;height:10px;animation:confettiFall linear forwards}
-@keyframes confettiFall{0%{transform:translateY(0) rotate(0);opacity:1}
-  100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
-.firecracker{position:absolute;width:6px;height:6px;border-radius:50%;animation:firePop .6s ease-out forwards}
-@keyframes firePop{0%{transform:translate(0,0) scale(1);opacity:1}
-  100%{transform:var(--tx,0) var(--ty,0) scale(0);opacity:0}}
+@keyframes confettiFall{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
 
-/* ===================== TOAST / NOTIFICATION ===================== */
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);
-  padding:10px 20px;border-radius:var(--r);background:rgba(20,20,50,.95);
-  border:1px solid var(--border);font-size:.9rem;white-space:nowrap;
-  z-index:999;opacity:0;transition:.3s;backdrop-filter:blur(8px)}
+/* ===================== TOAST ===================== */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);padding:10px 20px;border-radius:var(--r);background:rgba(20,20,50,.95);border:1px solid var(--border);font-size:.9rem;white-space:nowrap;z-index:999;opacity:0;transition:.3s;backdrop-filter:blur(8px)}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.err{border-color:var(--red);color:var(--red)}
 #toast.ok{border-color:var(--green);color:var(--green)}
 
 /* ===================== LOADING ===================== */
 #screen-loading{gap:16px}
-.spinner{width:50px;height:50px;border:3px solid var(--border);border-top-color:var(--gold);
-  border-radius:50%;animation:spin .8s linear infinite}
+.spinner{width:50px;height:50px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ===================== MISC ===================== */
 .gap-8{gap:8px}.gap-12{gap:12px}.gap-16{gap:16px}.gap-20{gap:20px}
 .w100{width:100%}.flex-row{display:flex;flex-direction:row}.flex-col{display:flex;flex-direction:column}
 .center{justify-content:center;align-items:center}.mt8{margin-top:8px}.mt16{margin-top:16px}
-.text-sm{font-size:.85rem}.text-xs{font-size:.75rem}
-.text-center{text-align:center}
+.text-sm{font-size:.85rem}.text-xs{font-size:.75rem}.text-center{text-align:center}
 .hidden{display:none!important}
-.shake{animation:shake .4s ease}
-@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}60%{transform:translateX(8px)}}
 .pop{animation:popIn .3s cubic-bezier(.17,.67,.38,1.3)}
 @keyframes popIn{from{transform:scale(0.7);opacity:0}to{transform:scale(1);opacity:1}}
-.glow-text{text-shadow:0 0 20px currentColor}
 </style>
 </head>
 <body>
 
-<!-- Starfield -->
 <div id="stars"></div>
-
-<!-- Score bar (game phase) -->
 <div id="score-bar"></div>
 
 <div id="app">
 
-  <!-- SCREEN: LOADING -->
+  <!-- LOADING -->
   <div id="screen-loading" class="screen active">
     <div class="spinner"></div>
     <p class="subtitle">Conectando...</p>
   </div>
 
-  <!-- SCREEN: SETUP (Firebase not configured) -->
+  <!-- SETUP -->
   <div id="screen-setup" class="screen" style="max-width:600px;gap:14px">
     <h1><span class="gold">🎯</span> QuizShow<br><span class="gold">Brasil</span></h1>
     <p class="subtitle">Configure o Firebase para jogar em multiplayer</p>
@@ -340,9 +288,9 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
       <h3 style="margin-bottom:12px;color:var(--gold)">⚙️ Configuração Rápida (gratuito)</h3>
       <ol class="setup-steps">
         <li><span class="step-num">1</span><span class="step-text">Acesse <a href="https://console.firebase.google.com" target="_blank" style="color:var(--cyan)">console.firebase.google.com</a> → clique em <strong>"Criar Projeto"</strong></span></li>
-        <li><span class="step-num">2</span><span class="step-text">No projeto criado: <strong>Build → Realtime Database → Criar banco de dados</strong>. Escolha "iniciar no modo de teste"</span></li>
-        <li><span class="step-num">3</span><span class="step-text"><strong>Configurações do Projeto → Seus apps → Web</strong>. Registre o app e copie o <code>firebaseConfig</code></span></li>
-        <li><span class="step-num">4</span><span class="step-text">Cole os valores nos campos abaixo e clique em <strong>Salvar & Jogar</strong></span></li>
+        <li><span class="step-num">2</span><span class="step-text">No projeto: <strong>Build → Realtime Database → Criar banco de dados</strong>. Modo de teste.</span></li>
+        <li><span class="step-num">3</span><span class="step-text"><strong>Configurações → Seus apps → Web</strong>. Registre e copie o <code>firebaseConfig</code></span></li>
+        <li><span class="step-num">4</span><span class="step-text">Cole os valores abaixo e clique em <strong>Salvar & Jogar</strong></span></li>
       </ol>
       <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
         <input class="inp setup-inp" id="cfg-apiKey" placeholder="apiKey">
@@ -352,10 +300,10 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
         <button class="btn btn-gold" onclick="saveConfig()">💾 Salvar &amp; Jogar</button>
       </div>
     </div>
-    <p class="text-xs" style="color:var(--text3);text-align:center">As configurações são salvas no seu navegador (localStorage)</p>
+    <p class="text-xs" style="color:var(--text3);text-align:center">As configurações são salvas no seu navegador</p>
   </div>
 
-  <!-- SCREEN: HOME -->
+  <!-- HOME -->
   <div id="screen-home" class="screen" style="gap:12px">
     <div class="logo">
       <div class="tagline">Game Show Multiplayer</div>
@@ -367,16 +315,16 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
         <button class="btn btn-gold" onclick="createRoom()">🏠 Criar Sala</button>
         <div class="divider">ou entre em uma sala</div>
         <div class="input-row">
-          <input class="inp" id="room-code-inp" placeholder="Código da sala (ex: XKQB)" maxlength="6" autocomplete="off" style="text-transform:uppercase;letter-spacing:.15em;font-family:'Orbitron',monospace">
+          <input class="inp" id="room-code-inp" placeholder="Código da sala" maxlength="6" autocomplete="off" style="text-transform:uppercase;letter-spacing:.15em;font-family:'Orbitron',monospace">
           <button class="btn btn-cyan" style="white-space:nowrap" onclick="joinRoom()">▶ Entrar</button>
         </div>
       </div>
     </div>
-    <p class="text-xs" style="color:var(--text3);text-align:center">2-6 jogadores • 12 rodadas • 8 categorias</p>
+    <p class="text-xs" style="color:var(--text3);text-align:center">2-6 jogadores • 12 rodadas • 12 categorias</p>
     <button class="btn btn-outline btn-sm" onclick="showSetup()">⚙️ Configurar Firebase</button>
   </div>
 
-  <!-- SCREEN: LOBBY -->
+  <!-- LOBBY -->
   <div id="screen-lobby" class="screen" style="gap:14px">
     <h2>Sala <span class="gold" id="lobby-code" style="font-family:'Orbitron',monospace;letter-spacing:.15em"></span></h2>
     <div class="share-row">
@@ -385,13 +333,11 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
     </div>
     <div class="lobby-players" id="lobby-players"></div>
     <div class="lobby-status" id="lobby-status"></div>
-    <button class="btn btn-gold" id="start-btn" onclick="startGame()" disabled style="min-width:200px">
-      🚀 Iniciar Jogo
-    </button>
+    <button class="btn btn-gold" id="start-btn" onclick="startGame()" disabled style="min-width:200px">🚀 Iniciar Jogo</button>
     <button class="btn btn-outline btn-sm" onclick="leaveRoom()">← Sair</button>
   </div>
 
-  <!-- SCREEN: DRAW -->
+  <!-- DRAW -->
   <div id="screen-draw" class="screen" style="gap:16px;padding-top:20px">
     <h2 class="gold">🎲 Sorteando a Ordem!</h2>
     <p class="subtitle">Quem jogará primeiro?</p>
@@ -401,7 +347,7 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
     <div class="draw-result" id="draw-result" style="display:none"></div>
   </div>
 
-  <!-- SCREEN: THEME SELECT -->
+  <!-- THEME SELECT -->
   <div id="screen-theme" class="screen" style="gap:12px;padding-top:20px">
     <div class="round-info-bar">
       <div class="round-badge" id="round-badge-theme">RODADA 1/12</div>
@@ -412,8 +358,9 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
     <div class="waiting-msg hidden" id="theme-waiting-msg">⏳ Aguardando a escolha do tema...</div>
   </div>
 
-  <!-- SCREEN: QUESTION -->
+  <!-- QUESTION -->
   <div id="screen-question" class="screen" style="gap:10px;padding-top:60px">
+    <div class="trick-badge hidden" id="trick-badge">🪤 Pergunta de Pegadinha!</div>
     <div class="q-meta">
       <div class="q-theme-badge" id="q-theme-badge">⚽ Esportes</div>
       <div class="q-progress" id="q-progress">Pergunta 1/4</div>
@@ -432,7 +379,7 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
     <div class="players-status" id="players-status"></div>
   </div>
 
-  <!-- SCREEN: QUESTION RESULT -->
+  <!-- QUESTION RESULT -->
   <div id="screen-qresult" class="screen" style="gap:12px;padding-top:66px">
     <div class="result-header" id="result-header">✅ Correto!</div>
     <div class="correct-answer-box">
@@ -443,17 +390,15 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
     <p class="next-q-info" id="next-q-info"></p>
   </div>
 
-  <!-- SCREEN: ROUND SUMMARY -->
+  <!-- ROUND SUMMARY -->
   <div id="screen-round-summary" class="screen" style="gap:12px;padding-top:66px">
     <div class="round-summary-title" id="round-summary-title">FIM DA RODADA 1</div>
     <h2 class="gold">📊 Placar</h2>
     <div class="scoreboard" id="scoreboard"></div>
-    <button class="btn btn-gold" id="next-round-btn" onclick="advanceFromSummary()" style="margin-top:8px" disabled>
-      ▶ Próxima Rodada
-    </button>
+    <button class="btn btn-gold" id="next-round-btn" onclick="advanceFromSummary()" style="margin-top:8px" disabled>▶ Próxima Rodada</button>
   </div>
 
-  <!-- SCREEN: FINAL -->
+  <!-- FINAL -->
   <div id="screen-final" class="screen" style="gap:12px;padding-top:20px;padding-bottom:30px">
     <div class="final-title">🏆 RESULTADO FINAL</div>
     <div class="podium-wrap" id="podium-wrap"></div>
@@ -461,72 +406,91 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
     <button class="btn btn-gold" onclick="playAgain()" style="min-width:200px;margin-top:8px">🔄 Jogar Novamente</button>
   </div>
 
-  <!-- CONFETTI -->
   <div class="confetti-wrap" id="confetti-wrap"></div>
 </div>
 
 <div id="toast"></div>
 
 <script type="module">
-/* =========================================================
-   🎯 QUIZSHOW BRASIL
-   Single-file multiplayer quiz game
-   Firebase Realtime Database + Web Speech API
-   ========================================================= */
-
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, set, get, update, onValue, remove, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getDatabase, ref, set, get, update, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-/* ========== QUESTIONS DATABASE ========== */
+/* ========== QUESTIONS ========== */
 const QUESTIONS = {
   brasil: [
-    {q:"O que significa a gíria brasileira 'mano'?",o:["Pai","Amigo/Irmão","Inimigo","Chefe"],a:1},
+    {q:"Qual desses NÃO é um estado brasileiro?",o:["Tocantins","Roraima","Iguaçu","Amapá"],a:2,trick:true},
+    {q:"O Hino Nacional Brasileiro foi composto por quem?",o:["Dom Pedro I","Francisco Manuel da Silva","Getúlio Vargas","Carlos Gomes"],a:1,trick:true},
+    {q:"Qual desses animais NÃO existe na fauna brasileira?",o:["Onça-pintada","Capivara","Canguru","Tamanduá"],a:2,trick:true},
+    {q:"A cidade de São Paulo foi fundada em que ano?",o:["1532","1549","1554","1565"],a:2,trick:true},
+    {q:"Qual estado brasileiro NÃO faz fronteira com o oceano Atlântico?",o:["Maranhão","Mato Grosso do Sul","Sergipe","Rio Grande do Norte"],a:1,trick:true},
+    {q:"Quem foi o primeiro presidente eleito por voto direto após a ditadura?",o:["José Sarney","Fernando Collor","Itamar Franco","Tancredo Neves"],a:1,trick:true},
+    {q:"Qual desses NÃO é um bioma brasileiro?",o:["Cerrado","Caatinga","Pampa","Savana Africana"],a:3,trick:true},
+    {q:"O que significa a gíria 'mano' no Brasil?",o:["Pai","Amigo/Irmão","Inimigo","Chefe"],a:1},
     {q:"Qual é o pássaro símbolo nacional do Brasil?",o:["Papagaio","Tucano","Beija-flor","Sabiá-laranjeira"],a:3},
     {q:"O que significa a gíria nordestina 'oxente'?",o:["Bom dia","Expressão de surpresa","Dinheiro","Obrigado"],a:1},
     {q:"Qual cidade é chamada de 'Cidade Maravilhosa'?",o:["São Paulo","Salvador","Rio de Janeiro","Fortaleza"],a:2},
     {q:"O que é a 'capoeira'?",o:["Dança europeia","Arte marcial afrobrasileira","Prato típico","Instrumento musical"],a:1},
-    {q:"Qual é o maior estado do Brasil?",o:["Pará","Mato Grosso","Minas Gerais","Amazonas"],a:3},
-    {q:"O que é o 'forró'?",o:["Esporte nordestino","Tipo de roupa","Ritmo e dança nordestinos","Festival religioso"],a:2},
+    {q:"Qual é o maior estado do Brasil por área?",o:["Pará","Mato Grosso","Minas Gerais","Amazonas"],a:3},
+    {q:"O que é o 'frevo'?",o:["Esporte nordestino","Tipo de roupa","Ritmo e dança pernambucanos","Festival religioso"],a:2},
     {q:"Qual é o apelido de São Paulo?",o:["Cidade Cinza","Cidade Maravilhosa","Capital do Sul","Terra da Garoa"],a:3},
-    {q:"O que é o 'frevo'?",o:["Ritmo musical pernambucano","Comida baiana","Jogo de cartas","Tipo de pimenta"],a:0},
-    {q:"Quem pintou o famoso quadro 'Abaporu'?",o:["Di Cavalcanti","Tarsila do Amaral","Portinari","Victor Meirelles"],a:1},
+    {q:"Quem pintou o quadro 'Abaporu'?",o:["Di Cavalcanti","Tarsila do Amaral","Portinari","Victor Meirelles"],a:1},
     {q:"Qual foi o primeiro presidente do Brasil?",o:["Dom Pedro I","Marechal Deodoro da Fonseca","Getúlio Vargas","Juscelino Kubitschek"],a:1},
-    {q:"Em que ano foi fundada a cidade de Brasília?",o:["1950","1954","1960","1964"],a:2},
+    {q:"Em que ano foi fundada Brasília?",o:["1950","1954","1960","1964"],a:2},
     {q:"Qual estado produz mais café no Brasil?",o:["São Paulo","Minas Gerais","Paraná","Bahia"],a:1},
-    {q:"O que é a Festa de Parintins?",o:["Carnaval do Nordeste","Festival folclórico do Amazonas","Festa junina do Sul","Carnaval indígena"],a:1},
-    {q:"Qual é a capital do estado do Amazonas?",o:["Belém","Macapá","Manaus","Porto Velho"],a:2},
-    {q:"O que significa 'saudade' para os brasileiros?",o:["Alegria intensa","Sentimento nostálgico de falta","Raiva passageira","Fome"],a:1},
-    {q:"Qual é o maior carnaval do mundo?",o:["Veneza","Rio de Janeiro","Salvador","Recife"],a:1},
+    {q:"Qual é a capital do Amazonas?",o:["Belém","Macapá","Manaus","Porto Velho"],a:2},
     {q:"O que é 'axé' no contexto cultural baiano?",o:["Beijo","Força vital/energia positiva","Obrigado","Boa noite"],a:1},
-    {q:"Qual gíria significa 'legal', 'bacana' em São Paulo?",o:["Sossegar","Broto","Massa","Jacar"],a:2},
-    {q:"Qual é a moeda atual do Brasil?",o:["Cruzeiro","Cruzado","Real","Centavo"],a:2},
+    {q:"Qual é o único país de língua portuguesa na América do Sul?",o:["Argentina","Guiana","Suriname","Brasil"],a:3},
+    {q:"Qual é o segundo maior estado do Brasil?",o:["Pará","Minas Gerais","Bahia","Mato Grosso"],a:0},
+    {q:"Em que cidade fica o Cristo Redentor?",o:["São Paulo","Belo Horizonte","Rio de Janeiro","Brasília"],a:2},
+    {q:"Quem foi Tiradentes?",o:["Escravo liberto","Mártir da Inconfidência Mineira","Primeiro governador","General imperial"],a:1},
+    {q:"O que é 'cangaço'?",o:["Dança nordestina","Banditismo sertanejo do século XIX/XX","Instrumento musical","Prato típico"],a:1},
+    {q:"Qual gíria brasileira significa 'dinheiro'?",o:["Conto","Grana","Pila","Todas as anteriores"],a:3},
+    {q:"Qual é o animal mais perigoso do Brasil em mortes humanas?",o:["Onça-pintada","Cascavel","Abelha africanizada","Capivara"],a:2},
+    {q:"O que é a Festa de Parintins?",o:["Carnaval do Nordeste","Festival folclórico do Amazonas","Festa junina do Sul","Carnaval indígena"],a:1},
+    {q:"Qual é o maior carnaval do mundo em público?",o:["Veneza","Rio de Janeiro","Salvador","Recife"],a:1},
   ],
   esportes: [
+    {q:"Qual desses jogadores NUNCA ganhou uma Copa do Mundo FIFA?",o:["Pelé","Messi (2022)","Cristiano Ronaldo","Romário"],a:2,trick:true},
+    {q:"Quantas Copas o Brasil ganhou SEGUIDAS entre 1958 e 1970?",o:["Duas","Três","Quatro","Nenhuma seguida"],a:1,trick:true},
+    {q:"Qual time NÃO é da cidade de São Paulo?",o:["Corinthians","Palmeiras","Santos","São Paulo FC"],a:2,trick:true},
+    {q:"Ayrton Senna morreu em qual corrida?",o:["GP da Itália","GP de Mônaco","GP de San Marino","GP do Brasil"],a:2,trick:true},
+    {q:"Michael Jordan jogou em qual posição?",o:["Point Guard","Small Forward","Shooting Guard","Power Forward"],a:2,trick:true},
+    {q:"Qual seleção ganhou a Copa de 2010?",o:["Brasil","Argentina","Alemanha","Espanha"],a:3,trick:true},
     {q:"Quantas Copas do Mundo o Brasil ganhou?",o:["3","4","5","6"],a:2},
-    {q:"Em que ano o Brasil ganhou sua primeira Copa do Mundo?",o:["1950","1954","1958","1962"],a:2},
+    {q:"Em que ano o Brasil ganhou sua primeira Copa?",o:["1950","1954","1958","1962"],a:2},
     {q:"Quem é conhecido como 'O Rei do Futebol'?",o:["Ronaldo","Pelé","Neymar","Zico"],a:1},
-    {q:"Em que cidade foi a Copa do Mundo de 2014?",o:["Argentina","Brasil","Alemanha","França"],a:1},
-    {q:"Qual time tem mais títulos da Champions League?",o:["Barcelona","Bayern Munich","Real Madrid","Juventus"],a:2},
-    {q:"Em que ano o Brasil sediou os Jogos Olímpicos?",o:["2012","2014","2016","2020"],a:2},
-    {q:"Qual é o apelido de Ronaldo Nazário?",o:["Galáctico","O Fenômeno","O Rei","Gaúcho"],a:1},
-    {q:"Qual piloto brasileiro ganhou a Fórmula 1 três vezes?",o:["Nelson Piquet","Ayrton Senna","Felipe Massa","Rubens Barrichello"],a:1},
-    {q:"Quantos jogadores um time de futebol tem em campo?",o:["9","10","11","12"],a:2},
-    {q:"Em que ano Ayrton Senna faleceu tragicamente?",o:["1992","1993","1994","1995"],a:2},
+    {q:"Qual piloto brasileiro ganhou a F1 três vezes?",o:["Nelson Piquet","Ayrton Senna","Felipe Massa","Rubens Barrichello"],a:1},
     {q:"Qual é o maior estádio do Brasil?",o:["Mineirão","Maracanã","Morumbi","Arena Corinthians"],a:1},
     {q:"Qual time brasileiro é chamado de 'Mengão'?",o:["Corinthians","Flamengo","Vasco","Botafogo"],a:1},
-    {q:"Quanto tempo dura um jogo de futebol?",o:["80 min","90 min","100 min","120 min"],a:1},
     {q:"Em qual esporte Daiane dos Santos foi campeã mundial?",o:["Atletismo","Ginástica artística","Natação","Judô"],a:1},
-    {q:"Qual é o número máximo de sets num jogo de vôlei?",o:["3","4","5","6"],a:2},
-    {q:"Quem venceu mais Copas do Mundo individuais (Bola de Ouro)?",o:["Ronaldo","Pelé","Messi","Zidane"],a:2},
+    {q:"Qual é o número máximo de sets no vôlei?",o:["3","4","5","6"],a:2},
+    {q:"Em que país surgiu o Rugby?",o:["Austrália","EUA","Inglaterra","Irlanda"],a:2},
+    {q:"Quem foi o artilheiro da Copa de 2022?",o:["Mbappé","Neymar","Messi","Benzema"],a:0},
+    {q:"Qual seleção ganhou mais Copas do Mundo?",o:["Alemanha","Itália","Brasil","Argentina"],a:2},
     {q:"Em que esporte se usa o termo 'smash'?",o:["Futebol","Natação","Tênis/Badminton","Basquete"],a:2},
     {q:"Qual é o tamanho oficial de uma piscina olímpica?",o:["25m","50m","75m","100m"],a:1},
-    {q:"Quem foi o maior artilheiro da Copa do Mundo de 2022?",o:["Mbappé","Neymar","Messi","Benzema"],a:0},
-    {q:"Em que país surgiu o esporte 'Rugby'?",o:["Austrália","EUA","Inglaterra","Irlanda"],a:2},
+    {q:"Quem tem mais títulos da Champions League?",o:["Barcelona","Bayern Munich","Real Madrid","Juventus"],a:2},
+    {q:"Em que ano o Brasil sediou as Olimpíadas?",o:["2012","2014","2016","2020"],a:2},
+    {q:"Qual é o apelido de Ronaldo Nazário?",o:["Galáctico","O Fenômeno","O Rei","Gaúcho"],a:1},
+    {q:"Qual país inventou o Basquete?",o:["EUA","Canadá","Brasil","Inglaterra"],a:1},
+    {q:"Quantos jogadores compõem uma equipe de basquete em quadra?",o:["4","5","6","7"],a:1},
+    {q:"Qual é o apelido do Atlético Mineiro?",o:["Raposa","Galo","Coelho","Leão"],a:1},
+    {q:"Qual atleta brasileiro tem mais ouros olímpicos?",o:["Gustavo Borges","Fofão","Isaquias Queiroz","Robert Scheidt"],a:3},
+    {q:"Qual é o apelido de Neymar Jr.?",o:["Ney","NJR","Juninho","O Menino Ney"],a:1},
+    {q:"Qual desses NÃO é um golpe do judô?",o:["Ippon","Waza-ari","Shido","Kawaza"],a:3},
+    {q:"Em quantos países o futebol é o esporte mais popular?",o:["Menos de 50","Entre 50 e 100","Mais de 100","Em todos"],a:2},
+    {q:"Qual time é chamado de 'Timão'?",o:["Flamengo","São Paulo","Corinthians","Grêmio"],a:2},
   ],
   ciencias: [
-    {q:"Qual é o elemento químico mais abundante no universo?",o:["Oxigênio","Carbono","Hidrogênio","Hélio"],a:2},
+    {q:"Qual desses NÃO é um planeta do Sistema Solar?",o:["Netuno","Saturno","Plutão","Urano"],a:2,trick:true},
+    {q:"Quantos lados tem um octógono?",o:["6","7","8","9"],a:2,trick:true},
+    {q:"O que Einstein disse sobre buracos negros?",o:["Que existem","Que não existem","Que talvez existam","Que são portais"],a:1,trick:true},
+    {q:"Qual é a fórmula química do sal de cozinha?",o:["NaCl","KCl","CaCl2","MgCl2"],a:0,trick:true},
+    {q:"O DNA humano é composto por quantas bases nitrogenadas?",o:["2","3","4","5"],a:2,trick:true},
+    {q:"Qual dos sentidos humanos se recupera mais lentamente?",o:["Visão","Audição","Olfato","Tato"],a:2,trick:true},
+    {q:"Qual é o elemento mais abundante no universo?",o:["Oxigênio","Carbono","Hidrogênio","Hélio"],a:2},
     {q:"Quantos planetas tem o Sistema Solar?",o:["7","8","9","10"],a:1},
-    {q:"Qual é a velocidade da luz (aproximada)?",o:["100.000 km/s","300.000 km/s","500.000 km/s","1.000.000 km/s"],a:1},
+    {q:"Qual é a velocidade da luz (aprox.)?",o:["100.000 km/s","300.000 km/s","500.000 km/s","1.000.000 km/s"],a:1},
     {q:"Quem descobriu a penicilina?",o:["Louis Pasteur","Alexander Fleming","Marie Curie","Isaac Newton"],a:1},
     {q:"Qual é a fórmula química da água?",o:["H3O","H2O","HO2","H2O2"],a:1},
     {q:"Quantos cromossomos tem uma célula humana normal?",o:["23","44","46","48"],a:2},
@@ -535,39 +499,59 @@ const QUESTIONS = {
     {q:"Qual é o símbolo químico do ouro?",o:["Au","Go","Or","Ag"],a:0},
     {q:"Quanto tempo a luz do Sol leva para chegar à Terra?",o:["1 min","8 min","30 min","1 hora"],a:1},
     {q:"Qual é o animal terrestre mais veloz do mundo?",o:["Leão","Tigre","Guepardo","Cavalo"],a:2},
-    {q:"Qual planeta é chamado de 'planeta vermelho'?",o:["Marte","Vênus","Mercúrio","Júpiter"],a:0},
     {q:"Quantos ossos tem o corpo humano adulto?",o:["206","246","186","226"],a:0},
     {q:"Qual é o maior órgão do corpo humano?",o:["Coração","Fígado","Pele","Cérebro"],a:2},
     {q:"Quem foi o primeiro humano a ir ao espaço?",o:["Neil Armstrong","Buzz Aldrin","Yuri Gagarin","John Glenn"],a:2},
     {q:"Qual é o número atômico do carbono?",o:["4","6","8","12"],a:1},
-    {q:"O que faz a fotossíntese nas plantas?",o:["Produz energia nas células animais","Converte luz solar em energia","Digere alimentos","Circula seiva"],a:1},
+    {q:"O que é a fotossíntese?",o:["Produz energia animal","Converte luz solar em energia","Digere alimentos","Circula seiva"],a:1},
     {q:"Qual é o metal mais abundante na crosta terrestre?",o:["Ferro","Cobre","Alumínio","Ouro"],a:2},
+    {q:"Qual é a partícula com carga negativa?",o:["Próton","Nêutron","Elétron","Fóton"],a:2},
+    {q:"Qual planeta tem os anéis mais visíveis?",o:["Júpiter","Saturno","Netuno","Urano"],a:1},
+    {q:"O que estuda a entomologia?",o:["Répteis","Insetos","Rochas","Estrelas"],a:1},
+    {q:"Qual é a temperatura do sol na superfície (aprox.)?",o:["1.000°C","3.000°C","5.500°C","10.000°C"],a:2},
+    {q:"Quantos litros de sangue um adulto tem?",o:["2-3 litros","4-6 litros","7-8 litros","9-10 litros"],a:1},
+    {q:"O que é a Lei da Gravidade de Newton?",o:["Corpos se repelem","Corpos se atraem proporcionalmente às massas","A Terra gira em torno do Sol","Energia não se cria nem destrói"],a:1},
     {q:"O que é um buraco negro?",o:["Estrela muito fria","Região de gravidade extrema","Planeta morto","Cometa gigante"],a:1},
-    {q:"Qual é a temperatura de ebulição da água ao nível do mar?",o:["90°C","95°C","100°C","105°C"],a:2},
   ],
   historia: [
-    {q:"Em que ano o Brasil foi 'descoberto' pelos portugueses?",o:["1488","1492","1500","1522"],a:2},
+    {q:"Qual evento aconteceu ANTES da Independência do Brasil?",o:["Abolição da escravidão","Chegada da família real ao Brasil","Proclamação da República","Guerra do Paraguai"],a:1,trick:true},
+    {q:"Napoleão Bonaparte era originalmente de qual região?",o:["França","Córsega (Itália/França)","Espanha","Portugal"],a:1,trick:true},
+    {q:"A Segunda Guerra acabou no mesmo ano em ambos os fronts?",o:["Sim, em maio de 1945","Não — Europa em maio, Ásia em setembro de 1945","Não — Europa em 1944, Ásia em 1946","Sim, em agosto de 1945"],a:1,trick:true},
+    {q:"Cleópatra era de qual descendência?",o:["Africana","Macedônica Grega","Árabe","Núbia"],a:1,trick:true},
+    {q:"Em que século ocorreu a Revolução Industrial?",o:["XVII","XVIII","XIX","XX"],a:1,trick:true},
+    {q:"Em que ano o Brasil foi 'descoberto'?",o:["1488","1492","1500","1522"],a:2},
     {q:"Em que ano o Brasil se tornou independente?",o:["1808","1822","1889","1891"],a:1},
     {q:"Quem proclamou a República no Brasil?",o:["Dom Pedro I","Dom Pedro II","Marechal Deodoro","Getúlio Vargas"],a:2},
     {q:"Qual foi a primeira capital do Brasil?",o:["Rio de Janeiro","Brasília","Salvador","São Paulo"],a:2},
     {q:"Em que ano foi abolida a escravidão no Brasil?",o:["1850","1871","1885","1888"],a:3},
-    {q:"Quem assinou a Lei Áurea, abolindo a escravidão?",o:["Princesa Isabel","Imperatriz Leopoldina","Dom Pedro II","Marechal Deodoro"],a:0},
+    {q:"Quem assinou a Lei Áurea?",o:["Princesa Isabel","Imperatriz Leopoldina","Dom Pedro II","Marechal Deodoro"],a:0},
     {q:"Em que ano começou a Segunda Guerra Mundial?",o:["1935","1937","1939","1941"],a:2},
-    {q:"Em que ano o homem chegou à Lua pela primeira vez?",o:["1965","1967","1969","1972"],a:2},
-    {q:"Quem foi Napoleão Bonaparte?",o:["Rei da França","General e imperador francês","Almirante britânico","Czar russo"],a:1},
-    {q:"Em que ano terminou a Segunda Guerra Mundial?",o:["1943","1944","1945","1946"],a:2},
-    {q:"O que foi a Guerra Fria?",o:["Conflito armado entre EUA e URSS","Tensão geopolítica entre EUA e URSS","Guerra no Ártico","Batalha naval"],a:1},
+    {q:"Em que ano o homem chegou à Lua?",o:["1965","1967","1969","1972"],a:2},
+    {q:"O que foi a Guerra Fria?",o:["Conflito armado entre EUA e URSS","Tensão geopolítica sem conflito direto entre EUA e URSS","Guerra no Ártico","Batalha naval"],a:1},
     {q:"Em que ano foi a Revolução Francesa?",o:["1776","1789","1799","1815"],a:1},
-    {q:"Quem foi Simón Bolívar?",o:["Rei da Espanha","Libertador da América do Sul","Presidente do Brasil","General português"],a:1},
     {q:"Em que ano o Muro de Berlim caiu?",o:["1987","1988","1989","1990"],a:2},
-    {q:"Qual foi a primeira nação independente da América Latina?",o:["Brasil","Argentina","Haiti","México"],a:2},
-    {q:"Quem foi Martin Luther King Jr.?",o:["Presidente americano","Líder dos direitos civis","General da Guerra Civil","Inventor"],a:1},
-    {q:"Em que ano foi a Proclamação da República do Brasil?",o:["1888","1889","1890","1891"],a:1},
-    {q:"O que foi o Tratado de Tordesilhas (1494)?",o:["Divisão do mundo entre Portugal e Espanha","Aliança militar europeia","Fim da escravidão","Criação da ONU"],a:0},
+    {q:"O que foi o Tratado de Tordesilhas?",o:["Divisão do mundo entre Portugal e Espanha","Aliança militar europeia","Fim da escravidão","Criação da ONU"],a:0},
     {q:"Em que cidade ocorreu a Inconfidência Mineira?",o:["Belo Horizonte","Diamantina","Ouro Preto","Mariana"],a:2},
-    {q:"Quem foi Getúlio Vargas?",o:["Descobridor do Brasil","Presidente que governou por 15 anos","Abolicionista","Primeiro imperador"],a:1},
+    {q:"A ONU foi criada após qual guerra?",o:["Primeira Guerra Mundial","Segunda Guerra Mundial","Guerra Fria","Guerra da Coreia"],a:1},
+    {q:"Qual ditadura durou mais no Brasil?",o:["Era Vargas (1930-1945)","Regime Militar (1964-1985)","Estado Novo (1937-1945)","República Velha"],a:1},
+    {q:"Em que ano o Brasil entrou na Segunda Guerra?",o:["1939","1940","1942","1944"],a:2},
+    {q:"Quem foi o último imperador do Brasil?",o:["Dom Pedro I","Dom João VI","Dom Pedro II","Dom Afonso"],a:2},
+    {q:"Em que ano aconteceu a Revolução Russa?",o:["1905","1912","1917","1921"],a:2},
+    {q:"Qual foi a primeira nação independente da América Latina?",o:["Brasil","Argentina","Haiti","México"],a:2},
+    {q:"Em que século foi construída a Grande Muralha da China (maior parte)?",o:["Século III a.C.","Século VII","Século XIV-XVII (Ming)","Século XIX"],a:2},
+    {q:"Quem foi Tiradentes de profissão?",o:["Padre","Militar e dentista","Comerciante","Fazendeiro"],a:1},
+    {q:"O que foi a 'Questão Militar' que levou ao fim da monarquia?",o:["Derrota na guerra","Conflito entre militares e governo imperial","Escândalos financeiros","Morte do imperador"],a:1},
+    {q:"Em que ano terminou a Segunda Guerra?",o:["1943","1944","1945","1946"],a:2},
+    {q:"Qual país inventou a imprensa com tipos móveis?",o:["China","Coreia","Alemanha (Gutenberg)","Holanda"],a:2},
+    {q:"Em que ano foi fundada a cidade de Roma?",o:["753 a.C.","509 a.C.","264 a.C.","27 a.C."],a:0},
   ],
   geografia: [
+    {q:"Qual é a capital da Austrália? (Cuidado!)",o:["Sydney","Melbourne","Canberra","Brisbane"],a:2,trick:true},
+    {q:"Qual é o maior país do mundo em POPULAÇÃO?",o:["China","Índia","EUA","Rússia"],a:1,trick:true},
+    {q:"Qual é o rio mais LONGO do mundo?",o:["Amazonas","Nilo","Mississippi","Yangtzé"],a:1,trick:true},
+    {q:"Qual desses países NÃO faz fronteira com o Brasil?",o:["Bolívia","Chile","Suriname","Guiana Francesa"],a:1,trick:true},
+    {q:"Qual é o país mais populoso da África?",o:["Egito","África do Sul","Nigéria","Etiópia"],a:2,trick:true},
+    {q:"O Equador passa por quais países sul-americanos?",o:["Só Brasil e Peru","Colômbia, Equador, Peru e Brasil","Apenas Venezuela e Colômbia","Só pelo Equador e Colômbia"],a:1,trick:true},
     {q:"Qual é a capital do Brasil?",o:["Rio de Janeiro","São Paulo","Brasília","Salvador"],a:2},
     {q:"Qual é o maior país da América do Sul?",o:["Argentina","Colômbia","Peru","Brasil"],a:3},
     {q:"Qual é o maior rio do mundo por volume de água?",o:["Nilo","Amazonas","Mississippi","Yangtzé"],a:1},
@@ -578,82 +562,234 @@ const QUESTIONS = {
     {q:"Qual é o oceano mais profundo do mundo?",o:["Atlântico","Índico","Ártico","Pacífico"],a:3},
     {q:"Qual é o menor país do mundo?",o:["Mônaco","Liechtenstein","Vaticano","San Marino"],a:2},
     {q:"Qual é a capital do Japão?",o:["Osaka","Tóquio","Pequim","Seul"],a:1},
-    {q:"Qual é o maior país do mundo em área?",o:["China","EUA","Canadá","Rússia"],a:3},
     {q:"Qual é o maior estado do Brasil?",o:["Pará","Mato Grosso","Minas Gerais","Amazonas"],a:3},
-    {q:"Qual é a capital da Austrália?",o:["Sydney","Melbourne","Canberra","Brisbane"],a:2},
     {q:"Em qual continente fica o Egito?",o:["Ásia","Europa","África","Oriente Médio"],a:2},
-    {q:"Qual é o país mais populoso do mundo?",o:["EUA","Índia","China","Brasil"],a:1},
-    {q:"Qual é a língua oficial do Brasil?",o:["Espanhol","Inglês","Português","Francês"],a:2},
-    {q:"Qual rio separa Brasil e Argentina na região das Cataratas?",o:["Rio Paraná","Rio Iguaçu","Rio Uruguai","Rio da Prata"],a:1},
-    {q:"Em que continente fica o Brasil?",o:["América do Norte","Europa","América do Sul","Oceania"],a:2},
     {q:"Qual é a capital da Alemanha?",o:["Munique","Hamburgo","Frankfurt","Berlim"],a:3},
-    {q:"Qual país tem a maior população da América do Sul?",o:["Argentina","Colômbia","Venezuela","Brasil"],a:3},
+    {q:"Qual país tem a maior extensão de costa no mundo?",o:["Rússia","Brasil","Canadá","Austrália"],a:2},
+    {q:"Qual é a cordilheira mais longa do mundo?",o:["Himalaias","Montanhas Rochosas","Alpes","Andes"],a:3},
+    {q:"Qual é a cidade mais populosa do Brasil?",o:["Rio de Janeiro","Belo Horizonte","São Paulo","Brasília"],a:2},
+    {q:"Qual é o deserto mais frio do mundo?",o:["Gobi","Saara","Ártico","Antártica"],a:3},
+    {q:"Quantos países fazem fronteira com o Brasil?",o:["8","9","10","11"],a:3},
+    {q:"Qual é o único mar sem costas?",o:["Mar Morto","Mar de Sargaço","Mar Vermelho","Mar Negro"],a:1},
+    {q:"Qual é a capital do Canadá?",o:["Toronto","Montreal","Vancouver","Ottawa"],a:3},
+    {q:"Qual continente não tem países?",o:["Ártico","Antártica","Oceania","Nenhum"],a:1},
+    {q:"Qual rio separa Brasil e Argentina nas Cataratas?",o:["Rio Paraná","Rio Iguaçu","Rio Uruguai","Rio da Prata"],a:1},
+    {q:"Qual é a língua oficial do Brasil?",o:["Espanhol","Inglês","Português","Francês"],a:2},
+    {q:"Qual é o maior lago de água doce do mundo?",o:["Lago Titicaca","Mar Cáspio","Lago Superior","Lago Vitória"],a:2},
   ],
   cultura: [
+    {q:"Quem criou o personagem do Batman?",o:["Stan Lee","Bob Kane e Bill Finger","Jack Kirby","Neil Gaiman"],a:1,trick:true},
+    {q:"Em 'Harry Potter', qual NÃO é uma Relíquia da Morte?",o:["Varinha das Varinhas","Pedra da Ressurreição","Capa da Invisibilidade","Anel dos Anciões"],a:3,trick:true},
+    {q:"'Titanic' (1997) ganhou quantos Oscars?",o:["9","10","11","14"],a:2,trick:true},
+    {q:"Quem dublou o Gênio em Aladdin (1992) original?",o:["Jim Carrey","Eddie Murphy","Robin Williams","Will Smith"],a:2,trick:true},
+    {q:"Em qual país foi criada 'La Casa de Papel'?",o:["México","Argentina","Espanha","Colômbia"],a:2,trick:true},
     {q:"Quem criou Mickey Mouse?",o:["Warner Bros","Walt Disney","Hanna-Barbera","Pixar"],a:1},
     {q:"Em que ano foi lançado o primeiro iPhone?",o:["2005","2006","2007","2008"],a:2},
-    {q:"Quem é o protagonista de 'Harry Potter'?",o:["Hermione Granger","Ron Weasley","Harry Potter","Alvo Dumbledore"],a:2},
     {q:"Quem interpreta Tony Stark no MCU?",o:["Chris Evans","Robert Downey Jr.","Chris Hemsworth","Mark Ruffalo"],a:1},
     {q:"Qual rede social foi criada por Mark Zuckerberg?",o:["Twitter","Instagram","Facebook","TikTok"],a:2},
     {q:"Qual é o jogo mais vendido de todos os tempos?",o:["GTA V","Minecraft","Tetris","Super Mario Bros"],a:2},
-    {q:"Qual é o nome da princesa do filme 'Frozen'?",o:["Rapunzel","Elsa","Bela","Moana"],a:1},
+    {q:"Qual é o nome da princesa do 'Frozen'?",o:["Rapunzel","Elsa","Bela","Moana"],a:1},
     {q:"Qual franquia de filmes é a mais lucrativa da história?",o:["Harry Potter","Star Wars","MCU (Marvel)","James Bond"],a:2},
-    {q:"Quem criou o sistema operacional Windows?",o:["Steve Jobs","Linus Torvalds","Bill Gates","Larry Page"],a:2},
-    {q:"Qual é o país de origem do K-pop?",o:["Japão","China","Coreia do Sul","Tailândia"],a:2},
     {q:"Em que ano foi criado o YouTube?",o:["2003","2004","2005","2006"],a:2},
-    {q:"Quem criou o personagem Superman?",o:["Stan Lee","Bob Kane","Jerry Siegel e Joe Shuster","Neil Gaiman"],a:2},
-    {q:"Qual o personagem mais icônico dos videogames?",o:["Pac-Man","Mario","Sonic","Lara Croft"],a:1},
-    {q:"Em que ano foi lançado o Netflix?",o:["1997","2000","2003","2006"],a:0},
-    {q:"Qual game da Rockstar Games é o mais vendido?",o:["Red Dead Redemption","GTA San Andreas","GTA V","L.A. Noire"],a:2},
-    {q:"Quem dublou Simba adulto em 'O Rei Leão' (1994)?",o:["Will Smith","Matthew Broderick","Tom Hanks","Jim Carrey"],a:1},
     {q:"Qual série da Netflix foi a mais assistida na estreia?",o:["Stranger Things","La Casa de Papel","Round 6","Bridgerton"],a:2},
+    {q:"Qual ator interpretou o Coringa em 'Joker' (2019)?",o:["Heath Ledger","Jack Nicholson","Joaquin Phoenix","Jared Leto"],a:2},
+    {q:"Em que ano foi lançado 'Vingadores: Ultimato'?",o:["2018","2019","2020","2021"],a:1},
+    {q:"Qual empresa criou o Playstation?",o:["Microsoft","Nintendo","Sega","Sony"],a:3},
+    {q:"Quem escreveu 'O Senhor dos Anéis'?",o:["C.S. Lewis","George R.R. Martin","J.R.R. Tolkien","J.K. Rowling"],a:2},
+    {q:"Em que cidade fica a Disneyland original?",o:["Orlando","Los Angeles (Anaheim)","Paris","Tóquio"],a:1},
+    {q:"Qual desses filmes NÃO foi dirigido por Steven Spielberg?",o:["E.T.","Indiana Jones","Jurassic Park","Star Wars"],a:3},
+    {q:"Qual o verdadeiro nome do cantor 'The Weeknd'?",o:["Abel Tesfaye","Rakim Athelaston","Michael Omari","Aubrey Graham"],a:0},
+    {q:"Qual personagem da Marvel é chamado de 'Pantera Negra'?",o:["Killmonger","T'Challa","Shuri","M'Baku"],a:1},
+    {q:"Qual film brasileiro ganhou indicação ao Oscar de Melhor Filme Estrangeiro?",o:["Cidade de Deus","Tropa de Elite","Central do Brasil","O Auto da Compadecida"],a:2},
+    {q:"Qual game da Rockstar é o mais vendido?",o:["Red Dead Redemption","GTA San Andreas","GTA V","L.A. Noire"],a:2},
     {q:"Em que país foi criado o anime?",o:["China","Coreia","Japão","Tailândia"],a:2},
-    {q:"Qual é o aplicativo de fotos mais baixado do mundo?",o:["Snapchat","Instagram","TikTok","Pinterest"],a:1},
-    {q:"Qual filme brasileiro ganhou indicação ao Oscar de Melhor Filme?",o:["Cidade de Deus","Tropa de Elite","Central do Brasil","O Auto da Compadecida"],a:2},
+    {q:"Qual personagem diz 'Que a Força esteja com você'?",o:["Luke Skywalker","Obi-Wan Kenobi","Yoda","Han Solo"],a:1},
+    {q:"Qual série é ambientada em Hawkins, Indiana?",o:["Dark","The OA","Stranger Things","Black Mirror"],a:2},
+    {q:"Quem interpreta Hermione Granger nos filmes?",o:["Keira Knightley","Emma Roberts","Emma Watson","Bonnie Wright"],a:2},
+    {q:"Qual é o nome do mordomo do Batman?",o:["James Gordon","Lucius Fox","Alfred Pennyworth","Dick Grayson"],a:2},
+    {q:"Qual estúdio produziu 'Toy Story'?",o:["DreamWorks","Blue Sky","Pixar","Walt Disney Animation"],a:2},
   ],
   musica: [
-    {q:"Qual é o apelido de Michael Jackson?",o:["The King","The Boss","Rei do Pop","Mago da Música"],a:2},
-    {q:"Qual banda gravou 'Bohemian Rhapsody'?",o:["Led Zeppelin","The Beatles","Queen","Rolling Stones"],a:2},
+    {q:"A banda Queen foi formada em qual país?",o:["EUA","Austrália","Inglaterra","Irlanda"],a:2,trick:true},
+    {q:"Freddie Mercury nasceu em qual país?",o:["Inglaterra","Índia","Zanzibar (Tanzânia)","Egito"],a:2,trick:true},
+    {q:"'Thriller' (Michael Jackson) foi lançado em que década?",o:["1970s","1980s","1990s","2000s"],a:1,trick:true},
+    {q:"Quem compôs a 9ª Sinfonia sendo SURDO?",o:["Mozart","Bach","Beethoven","Chopin"],a:2,trick:true},
+    {q:"O BTS é originário de qual país?",o:["Japão","China","Coreia do Norte","Coreia do Sul"],a:3,trick:true},
+    {q:"Qual artista tem o álbum mais vendido de todos os tempos?",o:["Beatles","Michael Jackson (Thriller)","AC/DC (Back in Black)","Eagles (Hotel California)"],a:1,trick:true},
     {q:"Quem é o músico brasileiro conhecido como 'Rei'?",o:["Caetano Veloso","Roberto Carlos","Djavan","Gilberto Gil"],a:1},
-    {q:"Em que década surgiu o Rock and Roll?",o:["1930","1940","1950","1960"],a:2},
-    {q:"Quem compôs a famosa 9ª Sinfonia?",o:["Mozart","Bach","Beethoven","Chopin"],a:2},
     {q:"Quem compôs 'Garota de Ipanema'?",o:["Chico Buarque","Tom Jobim e Vinícius de Moraes","Caetano Veloso","Roberto Carlos"],a:1},
     {q:"Qual gênero musical é originário da Jamaica?",o:["Reggae","Funk","Blues","Soul"],a:0},
-    {q:"Qual banda britânica é considerada a mais influente da história?",o:["Rolling Stones","Led Zeppelin","The Beatles","The Who"],a:2},
     {q:"Quem é o vocalista dos Rolling Stones?",o:["Keith Richards","Mick Jagger","Charlie Watts","Ronnie Wood"],a:1},
     {q:"De qual país é originário o Tango?",o:["Brasil","Chile","Argentina e Uruguai","Cuba"],a:2},
     {q:"Quem é chamado de 'Rainha do Pop'?",o:["Rihanna","Beyoncé","Lady Gaga","Madonna"],a:3},
-    {q:"Qual instrumento Beethoven tocava?",o:["Violino","Piano","Flauta","Oboé"],a:1},
     {q:"Qual gênero musical é típico do Nordeste brasileiro?",o:["Samba","Forró/Baião","Axé","Funk"],a:1},
-    {q:"Quem é Caetano Veloso?",o:["Jogador de futebol","Músico do Tropicalismo","Ator famoso","Político"],a:1},
-    {q:"Qual é o ritmo musical característico do Rio de Janeiro?",o:["Forró","Samba","Funk","Axé"],a:1},
-    {q:"Qual artista brasileiro fez sucesso internacional com 'Baila Comigo'?",o:["Ivete Sangalo","Claudinha","Claudia Leitte","Gloria Groove"],a:0},
-    {q:"Qual é o nome do ritmo musical afrobrasileiro sagrado?",o:["Candomblé","Pagode","Samba de Roda","Afoxé"],a:3},
-    {q:"Qual cantor norte-americano fez a famosa dança 'Moonwalk'?",o:["Prince","Michael Jackson","Elvis Presley","James Brown"],a:1},
+    {q:"Qual instrumento Beethoven tocava?",o:["Violino","Piano","Flauta","Oboé"],a:1},
+    {q:"Qual banda é formada pelos irmãos Gallagher?",o:["Blur","Oasis","The Verve","Radiohead"],a:1},
+    {q:"Quem fez a música 'Evidências'?",o:["Leandro & Leonardo","Chitãozinho & Xororó","Zezé di Camargo & Luciano","João Paulo & Daniel"],a:1},
+    {q:"Quem é conhecido como 'O Rei do Baião'?",o:["Luiz Gonzaga","Jackson do Pandeiro","Dominguinhos","Alceu Valença"],a:0},
+    {q:"Qual cantora brasileira é conhecida como 'Rainha do Axé'?",o:["Claudia Leitte","Daniela Mercury","Ivete Sangalo","Preta Gil"],a:1},
+    {q:"Quem compôs a música tema da Copa de 1998?",o:["Ricky Martin","Shakira","Cheb Khaled","Enrique Iglesias"],a:0},
+    {q:"Qual desses é um instrumento de percussão?",o:["Oboé","Trombone","Berimbau","Clarinete"],a:2},
     {q:"Qual artista tem mais Grammy Awards na história?",o:["Michael Jackson","Jay-Z","Taylor Swift","Beyoncé"],a:3},
+    {q:"Em que década surgiu o Hip-Hop?",o:["1960s","1970s","1980s","1990s"],a:1},
+    {q:"Qual é o instrumento de cordas mais popular do mundo?",o:["Violino","Guitarra","Violão","Ukulele"],a:2},
+    {q:"De qual gênero é originário o Axé Music?",o:["Nordeste Brasileiro","Sudeste Brasileiro","África","Caribe"],a:0},
+    {q:"Qual é o ritmo característico do Rio de Janeiro?",o:["Forró","Samba","Funk","Axé"],a:1},
+    {q:"Quem é Caetano Veloso?",o:["Jogador de futebol","Músico do Tropicalismo","Ator famoso","Político"],a:1},
     {q:"Qual instrumento é símbolo do forró nordestino?",o:["Violão","Sanfona","Zabumba","Triângulo"],a:1},
+    {q:"Qual artista vendeu mais de 1 bilhão de discos?",o:["Elvis Presley","The Beatles","Michael Jackson","Madonna"],a:1},
+    {q:"De qual país é originário o K-Pop?",o:["Japão","China","Coreia do Sul","Tailândia"],a:2},
+    {q:"Qual instrumento é característico do Blues?",o:["Violino","Guitarra elétrica","Oboé","Clarinete"],a:1},
   ],
   gastronomia: [
+    {q:"O que é 'acarajé'? (Cuidado!)",o:["Bolinho de feijão-fradinho frito em azeite de dendê","Bolinho de mandioca frita","Prato de peixe da Bahia","Bolo típico nordestino"],a:0,trick:true},
+    {q:"A pimenta malagueta é nativa de qual continente?",o:["Ásia","África","América","Europa"],a:2,trick:true},
+    {q:"Qual desses alimentos NÃO é um tubérculo?",o:["Batata","Cenoura","Mandioca","Inhame"],a:1,trick:true},
+    {q:"O chocolate foi criado por quem?",o:["Suíços","Belgas","Maias e Astecas","Franceses"],a:2,trick:true},
+    {q:"Qual desses queijos é originalmente brasileiro?",o:["Gruyère","Gorgonzola","Canastra (Minas)","Brie"],a:2,trick:true},
+    {q:"O sashimi é diferente do sushi porque...?",o:["É cozido","Não tem arroz, só peixe cru","Usa peixe de água doce","É servido quente"],a:1,trick:true},
     {q:"Qual é o prato nacional do Brasil?",o:["Churrasco","Feijoada","Moqueca","Coxinha"],a:1},
     {q:"De onde é originária a pizza?",o:["França","Espanha","Itália","Grécia"],a:2},
     {q:"Qual fruta é o ingrediente base da caipirinha?",o:["Limão","Laranja","Maracujá","Abacaxi"],a:0},
     {q:"O que é o 'brigadeiro'?",o:["Doce de leite condensado e chocolate","Pão de queijo","Sonho de padaria","Pastel"],a:0},
     {q:"O que é o 'pão de queijo'?",o:["Pão com recheio de queijo","Bolinho de polvilho com queijo","Biscoito salgado","Empada"],a:1},
-    {q:"Qual é a segunda bebida mais consumida no mundo depois da água?",o:["Café","Chá","Cerveja","Refrigerante"],a:1},
     {q:"De qual país é originária a paella?",o:["Portugal","Itália","França","Espanha"],a:3},
     {q:"Qual é o ingrediente principal do guacamole?",o:["Tomate","Abacate","Pepino","Cebola"],a:1},
     {q:"O que é a 'tapioca'?",o:["Prato de goma de mandioca","Tipo de arroz","Fruta tropical","Bebida fermentada"],a:0},
-    {q:"Qual é a fruta mais consumida no mundo?",o:["Maçã","Manga","Banana","Morango"],a:2},
     {q:"O que é o 'açaí'?",o:["Fruto da palmeira amazônica","Bebida alcoólica","Prato típico gaúcho","Tipo de tapioca"],a:0},
     {q:"Qual é a especiaria mais cara do mundo?",o:["Pimenta","Canela","Açafrão","Baunilha"],a:2},
-    {q:"O que é o 'vatapá'?",o:["Prato baiano de pão e camarão","Bebida nordestina","Sobremesa de açaí","Tempero gaúcho"],a:0},
-    {q:"Qual é o prato típico do Rio Grande do Sul?",o:["Feijoada","Churrasco gaúcho","Moqueca","Vatapá"],a:1},
     {q:"De que país é originário o Sushi?",o:["China","Japão","Coreia","Tailândia"],a:1},
-    {q:"Qual é o molho/condimento mais vendido do mundo?",o:["Ketchup","Maionese","Mostarda","Shoyu"],a:0},
     {q:"O que é 'cupuaçu'?",o:["Fruto típico amazônico","Bebida alcoólica","Prato típico do Nordeste","Tempero do Sul"],a:0},
-    {q:"Qual queijo é famoso na culinária italiana?",o:["Cheddar","Gouda","Parmesão","Brie"],a:2},
     {q:"O que é a 'moqueca'?",o:["Sobremesa brasileira","Ensopado de peixe/frutos do mar","Prato de massa","Bebida típica"],a:1},
-    {q:"Qual fruta tropical é conhecida como 'rei das frutas'?",o:["Manga","Mamão","Durian","Jaca"],a:2},
+    {q:"Qual queijo é famoso na culinária italiana para massas?",o:["Cheddar","Gouda","Parmesão","Brie"],a:2},
+    {q:"Qual é a fruta mais consumida no mundo?",o:["Maçã","Manga","Banana","Morango"],a:2},
+    {q:"Qual bebida é a mais consumida no mundo (excluindo água)?",o:["Café","Chá","Cerveja","Refrigerante"],a:1},
+    {q:"O que é 'kimchi'?",o:["Sopa japonesa","Legumes fermentados coreanos","Macarrão chinês","Carne grelhada tailandesa"],a:1},
+    {q:"Qual é o prato típico do Rio Grande do Sul?",o:["Feijoada","Churrasco gaúcho","Moqueca","Vatapá"],a:1},
+    {q:"O que é 'fondue'?",o:["Prato de queijo/chocolate derretido suíço","Carne argentina grelhada","Sopa francesa","Pão italiano recheado"],a:0},
+    {q:"Qual tempero dá sabor ao curry indiano?",o:["Cominho","Cúrcuma","Cardamomo","Todos os anteriores"],a:3},
+    {q:"O que é o 'vatapá'?",o:["Prato baiano de pão e camarão","Bebida nordestina","Sobremesa de açaí","Tempero gaúcho"],a:0},
+    {q:"Qual é o prato típico do Nordeste com carne de sol?",o:["Feijoada","Buchada","Baião de dois","Caldeirada"],a:2},
+    {q:"De onde vem o prato 'shawarma'?",o:["Grécia","Turquia/Oriente Médio","Índia","Egito"],a:1},
+    {q:"O que é 'ceviche'?",o:["Prato de arroz peruano","Peixe cru marinado em limão","Sopa colombiana","Carne grelhada mexicana"],a:1},
+  ],
+  youtube: [
+    {q:"Qual canal foi o PRIMEIRO a atingir 100 milhões de inscritos?",o:["PewDiePie","T-Series","MrBeast","Justin Bieber"],a:0,trick:true},
+    {q:"Quem atualmente tem mais inscritos no YouTube?",o:["PewDiePie","MrBeast","T-Series","Cocomelon"],a:2,trick:true},
+    {q:"O botão 'Não Gosto' foi removido publicamente em qual ano?",o:["2019","2020","2021","2022"],a:2,trick:true},
+    {q:"Qual foi o primeiro vídeo a atingir 1 bilhão de views?",o:["Gangnam Style","Baby (Justin Bieber)","Despacito","Charlie bit my finger"],a:1,trick:true},
+    {q:"Em que ano o YouTube foi criado?",o:["2003","2004","2005","2006"],a:2},
+    {q:"Quem fundou o YouTube?",o:["Mark Zuckerberg","Chad Hurley, Steve Chen e Jawed Karim","Larry Page","Elon Musk"],a:1},
+    {q:"Qual empresa comprou o YouTube em 2006?",o:["Meta","Microsoft","Amazon","Google"],a:3},
+    {q:"Qual é o maior YouTuber brasileiro em inscritos?",o:["Felipe Neto","Whindersson Nunes","Porta dos Fundos","Manual do Mundo"],a:1},
+    {q:"Qual vídeo tem mais visualizações de todos os tempos?",o:["Gangnam Style","Baby Shark","Despacito","Bohemian Rhapsody"],a:1},
+    {q:"O que é um 'short' no YouTube?",o:["Vídeo longo","Vídeo vertical curto até 60s","Vídeo ao vivo","Podcast"],a:1},
+    {q:"O que significa 'clickbait'?",o:["Vídeo viral","Thumbnail/título enganoso para atrair cliques","Comentário patrocinado","Parceria paga"],a:1},
+    {q:"O que é 'demonetização' no YouTube?",o:["Aumento de monetização","Suspensão dos ganhos de um vídeo","Novo formato de anúncio","Limite de visualizações"],a:1},
+    {q:"O que é 'Super Chat' no YouTube?",o:["Comentário em destaque pago durante lives","Mensagem privada","Sistema de moderação","Recurso de tradução"],a:0},
+    {q:"Qual foi o primeiro vídeo postado no YouTube?",o:["Charlie bit my finger","Me at the zoo","Evolution of Dance","Chocolate Rain"],a:1},
+    {q:"Quem foi o primeiro YouTuber a atingir 50 milhões de inscritos?",o:["PewDiePie","Smosh","Ray William Johnson","Nigahiga"],a:0},
+    {q:"O que é 'thumbnail'?",o:["Título do vídeo","Imagem de capa do vídeo","Descrição do canal","Música de fundo"],a:1},
+    {q:"Qual função permite ganhar dinheiro no YouTube?",o:["YouTube Plus","YouTube Partner Program","YouTube Creator","YouTube Studio"],a:1},
+    {q:"Quantos vídeos são enviados ao YouTube por MINUTO (aprox.)?",o:["100","250","500","Mais de 500"],a:3},
+    {q:"Qual desses NÃO é uma categoria do YouTube?",o:["Gaming","Education","Podcast","QuickWatch"],a:3},
+    {q:"Qual canal brasileiro ganhou fama com paródias e humor?",o:["Jovem Nerd","Porta dos Fundos","Nostalgia","Manual do Mundo"],a:1},
+    {q:"O que significa 'VOD' no contexto de streaming?",o:["Vídeo ao Vivo","Video on Demand","Volume de Download","Vídeo Oficial Digital"],a:1},
+    {q:"O que é 'endcard' no YouTube?",o:["Vinheta de abertura","Tela final com links clicáveis","Patrocínio exibido no vídeo","Legenda automática"],a:1},
+    {q:"O que significa 'subcribe' em português?",o:["Curtir","Compartilhar","Se inscrever","Comentar"],a:2},
+    {q:"Qual é o nome do programa de monetização de Shorts do YouTube?",o:["YouTube Fund","YouTube Shorts Bonus","YouTube Partner Program (Shorts)","Shorts Creator Fund"],a:2},
+    {q:"O que é 'community post' no YouTube?",o:["Vídeo curto","Publicação de texto/imagem no canal","Comentário fixado","Live exclusiva"],a:1},
+  ],
+  memes: [
+    {q:"De qual filme é o meme 'This is Fine' (cachorro no fogo)?",o:["Não é de filme — é HQ/webcomic","Jurassic Park","The Office","Toy Story"],a:0,trick:true},
+    {q:"Qual é a origem do meme 'Distracted Boyfriend'?",o:["Fotograma de filme","Foto de banco de imagens (stock photo)","Série de TV","Propaganda"],a:1,trick:true},
+    {q:"O meme 'Coffin Dance' é originário de qual país?",o:["Brasil","Nigéria","Gana","África do Sul"],a:2,trick:true},
+    {q:"Qual é a frase do meme do Lord Farquaad (Shrek)?",o:["What are you doing in my swamp?","Some of you may die…","Somebody once told me","Ogres are like onions"],a:1,trick:true},
+    {q:"O meme do 'doge' (Shiba Inu) tem qual nome real?",o:["Hachiko","Kabosu","Gabe","Marley"],a:1},
+    {q:"'We do a little trolling' é frase de qual meme?",o:["Trollface","Elon Musk","Shrek","PewDiePie"],a:1},
+    {q:"De qual série vem o meme 'Winter is Coming'?",o:["Lord of the Rings","Game of Thrones","Vikings","The Witcher"],a:1},
+    {q:"O meme 'Surprised Pikachu' representa o quê?",o:["Alegria genuína","Surpresa fingida/óbvia","Raiva intensa","Confusão"],a:1},
+    {q:"'OK Boomer' é dirigido a qual geração?",o:["Millennials","Geração Z","Baby Boomers","Geração X"],a:2},
+    {q:"De onde vem o meme 'It's over 9000!'?",o:["Naruto","Dragon Ball Z","One Piece","Bleach"],a:1},
+    {q:"Qual desses é um meme BRASILEIRO famoso?",o:["Chama no Zap","Press F to Pay Respects","Trollface","Success Kid"],a:0},
+    {q:"O meme 'Numa Numa' é associado a qual música?",o:["Dragostea Din Tei (O-Zone)","Gangnam Style","Macarena","Barbie Girl"],a:0},
+    {q:"'Press F to Pay Respects' vem de qual jogo?",o:["Call of Duty: Ghosts","Halo 3","Battlefield 4","Modern Warfare 2"],a:0},
+    {q:"Como se chama o gato do meme 'Woman Yelling at Cat'?",o:["Smudge","Grumpy Cat","Lil Bub","Nyan Cat"],a:0},
+    {q:"'Stonks' é a versão meme de qual palavra?",o:["Stocks (ações)","Stones","Stomps","Stonkers"],a:0},
+    {q:"Qual meme usa a imagem de Drake aprovando/reprovando?",o:["Hotline Bling","God's Plan","Started from the Bottom","Take Care"],a:0},
+    {q:"De onde vem 'All your base are belong to us'?",o:["Zero Wing (video game 1989)","Space Invaders","Pac-Man","Asteroids"],a:0},
+    {q:"O meme 'Galaxy Brain' tem qual significado?",o:["Raciocínio extremamente lógico","Conclusão absurda a partir de lógica exagerada","Pessoa muito inteligente","Superpoder mental"],a:1},
+    {q:"Qual é o nome do meme do homem com sobrancelha levantada?",o:["The Rock eyebrow","Dwayne face","Raise the roof","Side eye"],a:0},
+    {q:"O meme 'Two Buttons' (homem suando com dois botões) representa o quê?",o:["Dificuldade de escolha entre duas opções","Calor excessivo","Trabalho duro","Ansiedade generalizada"],a:0},
+    {q:"De qual anime é o meme 'Omae wa mou shindeiru'?",o:["Dragon Ball","Fist of the North Star (Hokuto no Ken)","JoJo's Bizarre Adventure","Naruto"],a:1},
+    {q:"O meme 'Grumpy Cat' tem qual nome real?",o:["Lil Bub","Smudge","Tardar Sauce","Nyan"],a:2},
+    {q:"O que significa o meme 'No cap'?",o:["Sem chapéu","Sério, sem mentira","Sem problema","Certo, confirmado"],a:1},
+    {q:"De onde vem o meme 'Shooting Stars' (homem voando)?",o:["Vine","YouTube","TikTok","Instagram"],a:0},
+    {q:"O que é 'copypasta' no contexto de memes?",o:["Texto colado como imagem","Texto longo copiado e colado repetidamente","Meme de culinária","Formato de vídeo"],a:1},
+  ],
+  jogos: [
+    {q:"Qual jogo NÃO foi desenvolvido pela Nintendo?",o:["Super Mario","The Legend of Zelda","Sonic the Hedgehog","Metroid"],a:2,trick:true},
+    {q:"Minecraft foi criado por quem?",o:["Notch (Markus Persson)","Jeb_","Dinnerbone","Herobrine"],a:0,trick:true},
+    {q:"GTA V foi lançado em qual ano?",o:["2011","2012","2013","2014"],a:2,trick:true},
+    {q:"Qual é o personagem PRINCIPAL de The Legend of Zelda?",o:["Zelda","Link","Ganon","Impa"],a:1,trick:true},
+    {q:"Em qual país a Rockstar Games foi fundada?",o:["EUA","Reino Unido","Canadá","Austrália"],a:1,trick:true},
+    {q:"Qual empresa criou o Fortnite?",o:["Activision","Epic Games","Riot Games","Ubisoft"],a:1},
+    {q:"O que significa 'RPG'?",o:["Real Player Game","Role-Playing Game","Racing Player Game","Random Play Game"],a:1},
+    {q:"Qual é o nome do encanador mascote da Nintendo?",o:["Luigi","Wario","Mario","Toad"],a:2},
+    {q:"Em qual jogo existe o personagem 'Geralt de Rívia'?",o:["Dragon Age","Skyrim","The Witcher","Dark Souls"],a:2},
+    {q:"Qual foi o jogo mais jogado no mundo em 2020?",o:["Fortnite","Among Us","Minecraft","League of Legends"],a:1},
+    {q:"O que é 'lag' em jogos online?",o:["Trapaça","Atraso de resposta na rede","Atualização de jogo","Tipo de conquista"],a:1},
+    {q:"Qual jogo popularizou o Battle Royale?",o:["Fortnite","PUBG","H1Z1","Apex Legends"],a:1},
+    {q:"Qual é o jogo de esport mais assistido do mundo?",o:["CS:GO","Valorant","League of Legends","Dota 2"],a:2},
+    {q:"O que é 'grind' em jogos?",o:["Trapaça online","Repetir tarefas para ganhar XP/itens","Jogar a noite toda","Modo difícil"],a:1},
+    {q:"Qual empresa criou o Call of Duty?",o:["EA","Activision/Infinity Ward","Ubisoft","Bethesda"],a:1},
+    {q:"Em qual plataforma foi lançado originalmente o Halo?",o:["PlayStation 2","PC","Xbox","Nintendo GameCube"],a:2},
+    {q:"O que significa 'noob' em gíria gamer?",o:["Jogador experiente","Jogador iniciante/ruim","Traidor de equipe","Streamer"],a:1},
+    {q:"Qual jogo brasileiro fez sucesso internacional?",o:["Horizon Chase","Toren","Tricky Towers","Dead Cells"],a:0},
+    {q:"Em qual jogo o protagonista é 'The Dragonborn'?",o:["Dragon Age Origins","Dark Souls","The Elder Scrolls V: Skyrim","Elden Ring"],a:2},
+    {q:"Qual console da Sega foi rival do SNES?",o:["Dreamcast","Sega CD","Mega Drive (Genesis)","Game Gear"],a:2},
+    {q:"O que é 'Easter Egg' em games?",o:["Missão bônus","Segredo/surpresa escondido pelos desenvolvedores","Costume de Páscoa","Item raro de drop"],a:1},
+    {q:"Qual é o nome do protagonista de Red Dead Redemption 2?",o:["John Marston","Dutch van der Linde","Arthur Morgan","Bill Williamson"],a:2},
+    {q:"Qual é o maior mapa de GTA?",o:["GTA San Andreas","GTA V","GTA IV","GTA Vice City"],a:1},
+    {q:"Qual jogo tem o slogan 'Prepare to Die'?",o:["Sekiro","Elden Ring","Dark Souls","Bloodborne"],a:2},
+    {q:"O que é 'speedrun'?",o:["Corrida online","Completar um jogo no menor tempo possível","Modo de dificuldade máxima","Partida rápida multiplayer"],a:1},
+    {q:"Qual personagem é protagonista de 'God of War'?",o:["Kratos","Ares","Zeus","Atreus"],a:0},
+    {q:"Qual empresa criou o Minecraft atualmente?",o:["Mojang (Microsoft)","Epic Games","Valve","Roblox Corporation"],a:0},
+    {q:"O que é 'DLC'?",o:["Modo online","Conteúdo adicional pago/gratuito","Atualização de segurança","Liga de jogadores"],a:1},
+    {q:"Qual é o nome do vilão principal de Mario?",o:["Wario","Bowser","Kamek","Koopa"],a:1},
+    {q:"Qual plataforma de jogos é da Valve?",o:["Origin","Epic Games Store","Steam","GOG"],a:2},
+  ],
+  geek: [
+    {q:"Em 'Star Wars', quem é o pai de Luke Skywalker?",o:["Obi-Wan Kenobi","Han Solo","Darth Vader","O Imperador"],a:2,trick:true},
+    {q:"Qual personagem NÃO é um Vingador original nos quadrinhos?",o:["Thor","Homem de Ferro","Hulk","Homem-Aranha"],a:3,trick:true},
+    {q:"Em 'Senhor dos Anéis', Gandalf pertence a qual ordem?",o:["Elfos","Anões","Istari (Magos)","Hobbits"],a:2,trick:true},
+    {q:"Em 'Attack on Titan', o titan que Eren herda é o...?",o:["Titan Colossal","Titan Blindado","Titan Fundador + Titan de Ataque","Titan da Besta"],a:2,trick:true},
+    {q:"Em 'Breaking Bad', qual era a profissão de Walter White?",o:["Médico","Químico/Professor de química","Engenheiro","Farmacêutico"],a:1,trick:true},
+    {q:"Qual anime tem o maior número de episódios?",o:["Naruto","One Piece","Dragon Ball","Detective Conan"],a:3,trick:true},
+    {q:"Quem criou o Homem-Aranha nos quadrinhos?",o:["Stan Lee","Jack Kirby","Stan Lee e Steve Ditko","Bob Kane"],a:2},
+    {q:"Qual é o nome da espada do Gandalf?",o:["Sting","Glamdring","Andúril","Orcrist"],a:1},
+    {q:"Em 'Game of Thrones', quem senta no Trono de Ferro no final?",o:["Jon Snow","Sansa Stark","Bran Stark","Daenerys"],a:2},
+    {q:"Qual é o verdadeiro nome do Batman?",o:["Oliver Queen","Barry Allen","Bruce Wayne","Hal Jordan"],a:2},
+    {q:"De qual mangá/anime é 'Naruto Uzumaki'?",o:["Bleach","One Piece","Naruto","Dragon Ball"],a:2},
+    {q:"Qual é a frase icônica de Darth Vader?",o:["May the Force be with you","I am your father","You underestimate my power","Execute Order 66"],a:1},
+    {q:"Em 'The Office', quem é o gerente da filial de Scranton?",o:["Jim Halpert","Dwight Schrute","Michael Scott","Ryan Howard"],a:2},
+    {q:"Qual é o nome do dragão de Daenerys que morre no final de GOT S7?",o:["Drogon","Rhaegal","Viserion","Balerion"],a:2},
+    {q:"Em qual anime o protagonista tem o poder de 'One for All'?",o:["Naruto","Boku no Hero Academia","Black Clover","Demon Slayer"],a:1},
+    {q:"Quem é o vilão principal de 'Vingadores: Guerra Infinita'?",o:["Ultron","Thanos","Loki","Ronan"],a:1},
+    {q:"Em qual série existe 'Los Pollos Hermanos'?",o:["Narcos","Ozark","Breaking Bad","Better Call Saul"],a:2},
+    {q:"Qual personagem de 'Friends' é paleontólogo?",o:["Chandler","Joey","Ross","Gunther"],a:2},
+    {q:"Em 'Death Note', qual é o nome do Deus da Morte que dá o caderno?",o:["Rem","Misa","Ryuk","Near"],a:2},
+    {q:"Qual é o nome da nave de Han Solo?",o:["Enterprise","Millennium Falcon","Serenity","Normandy"],a:1},
+    {q:"Em 'Fullmetal Alchemist', o que Edward Elric perdeu ao tentar ressuscitar sua mãe?",o:["Os dois braços","A perna direita e o braço esquerdo","A memória","A alma"],a:1},
+    {q:"Qual série da Netflix é ambientada em uma prisão feminina?",o:["Mindhunter","Ozark","OITNB (Orange is the New Black)","Wentworth"],a:2},
+    {q:"Qual é o nome do inimigo principal de Link em Zelda?",o:["Ganon/Ganondorf","Bowser","Sephiroth","Kefka"],a:0},
+    {q:"Em qual série existe a organização 'DHARMA Initiative'?",o:["Fringe","Westworld","Lost","The X-Files"],a:2},
+    {q:"Qual é o nome do robô assistente em 'Iron Man'?",o:["J.A.R.V.I.S.","H.A.L.","R2-D2","Data"],a:0},
+    {q:"De qual universo é o personagem 'Geralt de Rívia'?",o:["Game of Thrones","O Senhor dos Anéis","The Witcher","Duna"],a:2},
+    {q:"Qual é o nome do planeta natal de Superman?",o:["Marte","Krypton","Apokolips","Oa"],a:1},
+    {q:"Em 'Stranger Things', qual é o nome do vilão da Dimensão Invertida?",o:["Mind Flayer","Demogorgon","Vecna","Billy"],a:2},
+    {q:"Qual é o nome do grupo de heróis de 'Guardians of the Galaxy'?",o:["Defensores","Guardiões da Galáxia","Nova Corps","Aniquiladores"],a:1},
+    {q:"Em 'Dragon Ball Z', qual é a transformação mais conhecida de Goku?",o:["Kaioken","Super Saiyajin","Ultra Instinto","Ozaru"],a:1},
   ],
 };
 
@@ -663,14 +799,18 @@ const ANSWER_TIME = 15;
 const PLAYER_COLORS = ['#FF6B6B','#4ECDC4','#45B7D1','#96CEB4','#FFEAA7','#DDA0DD'];
 const PLAYER_EMOJIS = ['🦊','🐼','🦁','🐯','🦄','🐸'];
 const THEMES_META = {
-  brasil:     {name:'Brasil',       icon:'🇧🇷'},
-  esportes:   {name:'Esportes',     icon:'⚽'},
-  ciencias:   {name:'Ciências',     icon:'🔬'},
-  historia:   {name:'História',     icon:'📜'},
-  geografia:  {name:'Geografia',    icon:'🌍'},
-  cultura:    {name:'Cultura Pop',  icon:'🎬'},
-  musica:     {name:'Música',       icon:'🎵'},
-  gastronomia:{name:'Gastronomia',  icon:'🍽️'},
+  brasil:     {name:'Brasil',        icon:'🇧🇷'},
+  esportes:   {name:'Esportes',      icon:'⚽'},
+  ciencias:   {name:'Ciências',      icon:'🔬'},
+  historia:   {name:'História',      icon:'📜'},
+  geografia:  {name:'Geografia',     icon:'🌍'},
+  cultura:    {name:'Cultura Pop',   icon:'🎬'},
+  musica:     {name:'Música',        icon:'🎵'},
+  gastronomia:{name:'Gastronomia',   icon:'🍽️'},
+  youtube:    {name:'YouTube',       icon:'▶️'},
+  memes:      {name:'Memes',         icon:'😂'},
+  jogos:      {name:'Jogos',         icon:'🎮'},
+  geek:       {name:'Mundo Geek',    icon:'🤓'},
 };
 
 /* ========== GLOBALS ========== */
@@ -679,15 +819,21 @@ let myId = null, myName = null;
 let roomId = null, isHost = false;
 let roomRef = null, roomListener = null;
 let localRoom = null;
-let timerInterval = null, timerEndTime = null;
+let timerInterval = null;
 let hasAnswered = false;
+let firstAnswerTime = null;
+let timerShortened = false;
+let questionKey = '';
+let resultKey = '';
+let rsKey = '';
+let drawDone = false;
+let themeScreenState = '';
+let finalDone = false;
+let pendingAdvance = false;
 
 /* ========== FIREBASE CONFIG ========== */
 function getConfig() {
-  try {
-    const s = localStorage.getItem('qsb_config');
-    return s ? JSON.parse(s) : null;
-  } catch { return null; }
+  try { const s = localStorage.getItem('qsb_config'); return s ? JSON.parse(s) : null; } catch { return null; }
 }
 function saveConfig() {
   const apiKey = document.getElementById('cfg-apiKey').value.trim();
@@ -719,7 +865,6 @@ async function init() {
     toast('Erro na configuração Firebase','err');
   }
 }
-
 window.showSetup = () => showScreen('setup');
 
 /* ========== ROOM MANAGEMENT ========== */
@@ -730,12 +875,11 @@ async function createRoom() {
   const code = genRoomCode();
   roomId = code;
   isHost = true;
-  const idx = 0;
   const room = {
     host: myId, state:'lobby', round:0, qIdx:0,
     theme:null, lastTheme:null, roundQs:[], qEnd:0,
     answers:{}, used:{},
-    players:{ [myId]: { name:n, score:0, color:PLAYER_COLORS[idx], emoji:PLAYER_EMOJIS[idx], connected:true } },
+    players:{ [myId]: { name:n, score:0, streak:0, color:PLAYER_COLORS[0], emoji:PLAYER_EMOJIS[0], connected:true } },
     order:[], created: Date.now()
   };
   await set(ref(db, `rooms/${code}`), room);
@@ -758,11 +902,10 @@ async function joinRoom() {
   const players = room.players || {};
   const pCount = Object.keys(players).length;
   if (pCount >= 6) { toast('Sala cheia (máx 6)!','err'); return; }
-  if (players[myId]) { /* rejoin */ }
   isHost = myId === room.host;
   const idx = pCount;
   await update(ref(db, `rooms/${code}/players/${myId}`),
-    { name:n, score:0, color:PLAYER_COLORS[idx % 6], emoji:PLAYER_EMOJIS[idx % 6], connected:true });
+    { name:n, score:0, streak:0, color:PLAYER_COLORS[idx % 6], emoji:PLAYER_EMOJIS[idx % 6], connected:true });
   roomId = code;
   listenRoom(code);
   document.getElementById('lobby-code').textContent = code;
@@ -776,20 +919,34 @@ function listenRoom(code) {
   roomListener = onValue(roomRef, snap => {
     if (!snap.exists()) { toast('Sala encerrada','err'); leaveRoom(); return; }
     localRoom = snap.val();
-    isHost = localRoom.host === myId;
     handleRoomUpdate(localRoom);
   });
 }
 
+/* ========== LEAVE ROOM (com herança de host) ========== */
 async function leaveRoom() {
   if (roomListener) { roomListener(); roomListener = null; }
-  if (roomId && myId) {
-    try { await remove(ref(db, `rooms/${roomId}/players/${myId}`)); } catch {}
+  if (roomId && myId && db) {
+    try {
+      const snap = await get(ref(db, `rooms/${roomId}`));
+      if (snap.exists()) {
+        const room = snap.val();
+        const remaining = Object.keys(room.players || {}).filter(id => id !== myId);
+        if (remaining.length === 0) {
+          await remove(ref(db, `rooms/${roomId}`));
+        } else {
+          const updates = {};
+          updates[`players/${myId}`] = null;
+          if (room.host === myId) updates['host'] = remaining[0];
+          await update(ref(db, `rooms/${roomId}`), updates);
+        }
+      }
+    } catch(e) { console.error(e); }
   }
   stopTimer();
   showScreen('home');
   document.getElementById('score-bar').classList.remove('visible');
-  roomId = null; localRoom = null;
+  roomId = null; localRoom = null; isHost = false;
 }
 window.leaveRoom = leaveRoom;
 
@@ -799,35 +956,52 @@ function copyCode() {
 }
 window.copyCode = copyCode;
 
-/* ========== GAME START ========== */
+/* ========== GAME START (reseta pontos) ========== */
 async function startGame() {
   if (!isHost) return;
   const players = localRoom.players;
   const pArr = Object.keys(players);
   if (pArr.length < 2) { toast('Precisa de pelo menos 2 jogadores!','err'); return; }
   const order = shuffle([...pArr]);
-  await update(roomRef, { state:'drawing', order, round:1, qIdx:0, lastTheme:null, used:{} });
+  const resetUpdates = { state:'drawing', order, round:1, qIdx:0, lastTheme:null, used:{} };
+  pArr.forEach(id => {
+    resetUpdates[`players/${id}/score`] = 0;
+    resetUpdates[`players/${id}/streak`] = 0;
+    resetUpdates[`players/${id}/lastDelta`] = 0;
+  });
+  await update(roomRef, resetUpdates);
 }
 window.startGame = startGame;
 
-/* ========== STATE MACHINE ========== */
+/* ========== STATE MACHINE (com herança de host) ========== */
 function handleRoomUpdate(room) {
+  // Herança de host: se o host saiu, promover o próximo
+  if (room.players && room.host && !room.players[room.host]) {
+    const remaining = Object.keys(room.players);
+    if (remaining.length > 0 && remaining[0] === myId && !isHost) {
+      isHost = true;
+      update(roomRef, { host: myId });
+      toast('Você se tornou o Host da sala!','ok');
+    }
+  }
+  if (room.players && room.players[myId]) {
+    isHost = room.host === myId;
+  }
   updateScoreBar(room);
   switch(room.state) {
-    case 'lobby':       renderLobby(room); break;
-    case 'drawing':     renderDraw(room); break;
-    case 'theme_select':renderThemeSelect(room); break;
-    case 'question':    renderQuestion(room); break;
-    case 'question_result': renderQResult(room); break;
-    case 'round_summary':   renderRoundSummary(room); break;
-    case 'game_over':   renderFinal(room); break;
+    case 'lobby':            renderLobby(room); break;
+    case 'drawing':          renderDraw(room); break;
+    case 'theme_select':     renderThemeSelect(room); break;
+    case 'question':         renderQuestion(room); break;
+    case 'question_result':  renderQResult(room); break;
+    case 'round_summary':    renderRoundSummary(room); break;
+    case 'game_over':        renderFinal(room); break;
   }
 }
 
 /* ========== LOBBY ========== */
 function renderLobby(room) {
-  if (document.getElementById('screen-lobby').style.display === 'none' ||
-      !document.getElementById('screen-lobby').classList.contains('active')) {
+  if (!document.getElementById('screen-lobby').classList.contains('active')) {
     document.getElementById('lobby-code').textContent = roomId;
     showScreen('lobby');
   }
@@ -846,7 +1020,7 @@ function renderLobby(room) {
   for (let i = pArr.length; i < 6; i++) {
     const slot = document.createElement('div');
     slot.className = 'lobby-player lobby-slot';
-    slot.textContent = `Aguardando...`;
+    slot.textContent = 'Aguardando...';
     grid.appendChild(slot);
   }
   const status = document.getElementById('lobby-status');
@@ -862,7 +1036,6 @@ function renderLobby(room) {
 }
 
 /* ========== DRAW ========== */
-let drawDone = false;
 function renderDraw(room) {
   if (!document.getElementById('screen-draw').classList.contains('active')) {
     drawDone = false;
@@ -904,19 +1077,16 @@ function revealOrder(room, idx) {
   const resultEl = document.getElementById('draw-result');
   if (idx === 0) { resultEl.style.display = 'flex'; resultEl.innerHTML = ''; }
   if (idx >= order.length) {
-    speak(`Ordem sorteada! Começando a rodada 1!`);
-    if (isHost) setTimeout(async () => {
-      await update(roomRef, { state:'theme_select' });
-    }, 2500);
+    speak('Ordem sorteada! Começando a rodada 1!');
+    if (isHost) setTimeout(async () => { await update(roomRef, { state:'theme_select' }); }, 2500);
     return;
   }
   const medals = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣'];
   const p = players[order[idx]];
   const item = document.createElement('div');
   item.className = 'draw-result-item';
-  item.style.animationDelay = `${idx * 0.1}s`;
   item.innerHTML = `<span class="draw-position" style="color:${p.color}">${medals[idx]}</span>
-    <div class="p-avatar" style="background:${p.color}20;color:${p.color};width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center">${p.emoji}</div>
+    <div style="width:32px;height:32px;border-radius:50%;background:${p.color}20;color:${p.color};display:flex;align-items:center;justify-content:center">${p.emoji}</div>
     <span style="font-weight:700">${esc(p.name)}</span>
     ${order[idx] === myId ? '<span style="font-size:.75rem;color:var(--cyan);margin-left:auto">Você!</span>' : ''}`;
   resultEl.appendChild(item);
@@ -925,7 +1095,6 @@ function revealOrder(room, idx) {
 }
 
 /* ========== THEME SELECT ========== */
-let themeScreenState = '';
 function renderThemeSelect(room) {
   const key = `${room.round}_${room.lastTheme}`;
   if (themeScreenState !== key) {
@@ -936,23 +1105,22 @@ function renderThemeSelect(room) {
     const pickerId = room.order[pickerOrder];
     const picker = room.players[pickerId];
     const isMe = pickerId === myId;
-    const msg = document.getElementById('theme-picker-msg');
+    document.getElementById('theme-picker-msg').textContent = isMe
+      ? '🎯 Você escolhe o tema desta rodada!'
+      : `🎯 ${picker?.name} está escolhendo o tema...`;
     const grid = document.getElementById('theme-grid');
-    const waiting = document.getElementById('theme-waiting-msg');
-    msg.textContent = isMe ? '🎯 Você escolhe o tema desta rodada!' : `🎯 ${picker?.name} está escolhendo o tema...`;
     grid.innerHTML = '';
-    Object.entries(THEMES_META).forEach(([key, meta]) => {
-      const isLast = key === room.lastTheme;
+    Object.entries(THEMES_META).forEach(([k, meta]) => {
+      const isLast = k === room.lastTheme;
       const div = document.createElement('div');
       div.className = 'theme-card' + (isLast ? ' last-used disabled' : '');
       div.innerHTML = `<div class="t-icon">${meta.icon}</div><div class="t-name">${meta.name}</div>${isLast ? '<div style="font-size:.65rem;color:var(--red)">Última rodada</div>' : ''}`;
-      if (isMe && !isLast) {
-        div.onclick = () => selectTheme(key);
-      }
+      if (isMe && !isLast) div.onclick = () => selectTheme(k);
       grid.appendChild(div);
     });
-    if (!isMe) { waiting.classList.remove('hidden'); }
-    else { waiting.classList.add('hidden'); }
+    const waiting = document.getElementById('theme-waiting-msg');
+    if (!isMe) waiting.classList.remove('hidden');
+    else waiting.classList.add('hidden');
     if (isMe) speak(`Rodada ${room.round}! Você escolhe o tema!`);
     else speak(`Rodada ${room.round}! ${picker?.name} está escolhendo o tema.`);
   }
@@ -968,8 +1136,7 @@ async function selectTheme(theme) {
     state:'question', theme, lastTheme:theme,
     roundQs: qs, qIdx:0, answers:{}, qEnd: Date.now() + ANSWER_TIME * 1000
   });
-  const meta = THEMES_META[theme];
-  speak(`Tema escolhido: ${meta.name}!`);
+  speak(`Tema escolhido: ${THEMES_META[theme].name}!`);
 }
 window.selectTheme = selectTheme;
 
@@ -986,13 +1153,14 @@ function selectQuestions(theme, count, used) {
   return chosen.map(i => ({cat:theme, idx:i}));
 }
 
-/* ========== QUESTION ========== */
-let questionKey = '';
+/* ========== QUESTION (com trick badge e timer reduzido após 1ª resposta) ========== */
 function renderQuestion(room) {
   const qRef = `${room.round}_${room.qIdx}_${room.theme}`;
   if (questionKey !== qRef) {
     questionKey = qRef;
     hasAnswered = false;
+    firstAnswerTime = null;
+    timerShortened = false;
     showScreen('question');
     const numPlayers = Object.keys(room.players).length;
     const meta = THEMES_META[room.theme];
@@ -1000,30 +1168,39 @@ function renderQuestion(room) {
     document.getElementById('q-progress').textContent = `Pergunta ${room.qIdx + 1}/${numPlayers}`;
     const qData = room.roundQs[room.qIdx];
     const q = QUESTIONS[qData.cat][qData.idx];
+    // Trick badge
+    const trickBadge = document.getElementById('trick-badge');
+    if (q.trick) trickBadge.classList.remove('hidden');
+    else trickBadge.classList.add('hidden');
     document.getElementById('q-text').textContent = q.q;
     const grid = document.getElementById('options-grid');
     grid.innerHTML = '';
-    const letters = ['A','B','C','D'];
-    q.o.forEach((opt, i) => {
+    ['A','B','C','D'].forEach((letter, i) => {
       const btn = document.createElement('button');
       btn.className = 'option-btn';
       btn.id = `opt-${i}`;
-      btn.innerHTML = `<span class="opt-letter">${letters[i]}</span><span>${esc(opt)}</span>`;
+      btn.innerHTML = `<span class="opt-letter">${letter}</span><span>${esc(q.o[i])}</span>`;
       btn.onclick = () => submitAnswer(i);
       grid.appendChild(btn);
     });
     updatePlayersStatus(room);
     startTimer(room.qEnd);
     speak(q.q);
-    // mark used
-    if (isHost) {
-      const usedKey = `used/${qData.cat}_${qData.idx}`;
-      update(roomRef, { [usedKey]: true });
-    }
+    if (isHost) update(roomRef, { [`used/${qData.cat}_${qData.idx}`]: true });
   } else {
-    // update player status as answers come in
     updatePlayersStatus(room);
-    // check if my answer is in
+    // Reduzir timer para 5s após a 1ª resposta
+    if (isHost && !timerShortened) {
+      const answers = room.answers || {};
+      if (Object.keys(answers).length >= 1) {
+        timerShortened = true;
+        const newEnd = Math.min(room.qEnd, Date.now() + 5000);
+        if (newEnd < room.qEnd) {
+          update(roomRef, { qEnd: newEnd });
+          startTimer(newEnd);
+        }
+      }
+    }
     if (room.answers && room.answers[myId] !== undefined && !hasAnswered) {
       hasAnswered = true;
       const myAns = room.answers[myId];
@@ -1032,7 +1209,6 @@ function renderQuestion(room) {
         if (i === myAns) b.classList.add('selected');
       });
     }
-    // host: auto-advance when all answered or time up
     if (isHost) checkAutoAdvance(room);
   }
 }
@@ -1065,43 +1241,62 @@ window.submitAnswer = submitAnswer;
 function checkAutoAdvance(room) {
   if (!isHost) return;
   const players = room.players || {};
-  const connectedPlayers = Object.entries(players).filter(([,p]) => p.connected !== false);
-  const allAnswered = connectedPlayers.every(([id]) => room.answers && room.answers[id] !== undefined);
+  const connected = Object.entries(players).filter(([,p]) => p.connected !== false);
+  const allAnswered = connected.every(([id]) => room.answers && room.answers[id] !== undefined);
   const timeUp = Date.now() >= (room.qEnd || 0);
   if ((allAnswered || timeUp) && !pendingAdvance) {
     pendingAdvance = true;
     setTimeout(() => { advanceToResult(room); pendingAdvance = false; }, timeUp && !allAnswered ? 500 : 300);
   }
 }
-let pendingAdvance = false;
 
+/* ========== ADVANCE TO RESULT (com streaks e pontos dobrados) ========== */
 async function advanceToResult(room) {
   if (!isHost || room.state !== 'question') return;
-  // fill unanswered with -1
   const players = room.players || {};
   const updates = { state: 'question_result' };
+  // Preencher sem resposta com -1
   Object.keys(players).forEach(id => {
-    if (!room.answers || room.answers[id] === undefined) {
-      updates[`answers/${id}`] = -1;
-    }
+    if (!room.answers || room.answers[id] === undefined) updates[`answers/${id}`] = -1;
   });
-  // calculate scores
   const qData = room.roundQs[room.qIdx];
   const q = QUESTIONS[qData.cat][qData.idx];
-  const answers = { ...(room.answers || {}), ...Object.fromEntries(
-    Object.keys(players).filter(id => !room.answers || room.answers[id] === undefined).map(id => [id, -1])
-  )};
+  const answers = { ...(room.answers || {}) };
+  Object.keys(players).filter(id => answers[id] === undefined).forEach(id => { answers[id] = -1; });
+
   Object.entries(players).forEach(([id, p]) => {
     const ans = answers[id];
     const correct = ans === q.a;
-    const delta = correct ? 1 : (p.score > 0 ? -1 : 0);
-    updates[`players/${id}/score`] = Math.max(0, (p.score || 0) + delta);
+    const noAnswer = ans === -1;
+    const currentStreak = p.streak || 0;
+    let newStreak, baseDelta;
+
+    if (noAnswer) {
+      newStreak = currentStreak;
+      baseDelta = 0;
+    } else if (correct) {
+      newStreak = currentStreak >= 0 ? currentStreak + 1 : 1;
+      baseDelta = 1;
+    } else {
+      newStreak = currentStreak <= 0 ? currentStreak - 1 : -1;
+      baseDelta = p.score > 0 ? -1 : 0;
+    }
+
+    // Pontos dobrados
+    let finalDelta = baseDelta;
+    if (correct && currentStreak >= 3) finalDelta = 2;
+    if (!correct && !noAnswer && currentStreak <= -3) {
+      finalDelta = p.score >= 2 ? -2 : (p.score > 0 ? -1 : 0);
+    }
+
+    updates[`players/${id}/score`] = Math.max(0, (p.score || 0) + finalDelta);
+    updates[`players/${id}/streak`] = newStreak;
+    updates[`players/${id}/lastDelta`] = finalDelta;
   });
   await update(roomRef, updates);
 }
 
 /* ========== QUESTION RESULT ========== */
-let resultKey = '';
 function renderQResult(room) {
   const rKey = `${room.round}_${room.qIdx}`;
   if (resultKey !== rKey) {
@@ -1116,40 +1311,38 @@ function renderQResult(room) {
     header.textContent = iCorrect ? '✅ Correto!' : '❌ Errado!';
     header.className = 'result-header ' + (iCorrect ? 'correct' : 'wrong');
     document.getElementById('ca-text').textContent = q.o[q.a];
-    // show answers
+    // Grid de respostas com streaks
     const grid = document.getElementById('player-answers-grid');
     grid.innerHTML = '';
-    const players = room.players || {};
-    const prevScores = computePrevScores(room, q);
-    Object.entries(players).forEach(([id, p]) => {
+    Object.entries(room.players || {}).forEach(([id, p]) => {
       const ans = room.answers ? room.answers[id] : -1;
       const correct = ans === q.a;
       const unanswered = ans === -1;
-      const prevScore = prevScores[id] || 0;
-      const delta = correct ? 1 : (prevScore > 0 ? -1 : 0);
+      const delta = p.lastDelta !== undefined ? p.lastDelta : 0;
+      const streak = p.streak || 0;
+      let streakHtml = '';
+      if (streak >= 3) streakHtml = `<span class="streak-icon streak-fire">🔥</span>`;
+      else if (streak <= -3) streakHtml = `<span class="streak-icon streak-water">💧</span>`;
       const row = document.createElement('div');
       row.className = `pa-row ${correct ? 'p-correct' : 'p-wrong'}`;
       row.innerHTML = `
-        <div class="p-avatar" style="background:${p.color}20;color:${p.color};width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center">${p.emoji}</div>
-        <div class="pa-name">${esc(p.name)}</div>
-        <div class="pa-answer">${unanswered ? '⏰ Tempo esgotado' : esc(q.o[ans])}</div>
-        <div class="pa-delta ${correct?'pos':delta<0?'neg':'neutral'}">${correct?'+1':delta<0?'-1':'0'}</div>`;
+        <div style="width:28px;height:28px;border-radius:50%;background:${p.color}20;color:${p.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">${p.emoji}</div>
+        <div class="pa-name">${esc(p.name)}${streakHtml}</div>
+        <div class="pa-answer">${unanswered ? '⏰ Tempo' : esc(q.o[ans])}</div>
+        <div class="pa-delta ${delta > 0 ? 'pos' : delta < 0 ? 'neg' : 'neutral'}">${delta > 0 ? '+'+delta : delta}</div>`;
       grid.appendChild(row);
     });
-    // next info
-    const numPlayers = Object.keys(players).length;
+    // Info próxima
+    const numPlayers = Object.keys(room.players || {}).length;
     const isLastQ = room.qIdx + 1 >= numPlayers;
     const isLastRound = room.round >= TOTAL_ROUNDS;
     const info = document.getElementById('next-q-info');
     if (isLastQ && isLastRound) info.textContent = 'Última pergunta! Calculando resultado final...';
     else if (isLastQ) info.textContent = `Fim da rodada ${room.round}! Placar em breve...`;
-    else info.textContent = `Próxima pergunta em breve...`;
-    // speak result
-    if (iCorrect) speak('Correto! Você ganhou um ponto!');
+    else info.textContent = 'Próxima pergunta em breve...';
+    if (iCorrect) speak('Correto! Você ganhou pontos!');
     else speak(`Resposta errada. A correta era: ${q.o[q.a]}`);
-    // host auto-advance
     if (isHost) setTimeout(() => advanceFromResult(room), 4000);
-    // highlight options
     setTimeout(() => {
       document.querySelectorAll('.option-btn').forEach((b,i) => {
         if (i === q.a) b.classList.add('correct');
@@ -1157,17 +1350,6 @@ function renderQResult(room) {
       });
     }, 100);
   }
-}
-
-function computePrevScores(room, q) {
-  const prev = {};
-  Object.entries(room.players || {}).forEach(([id, p]) => {
-    const ans = room.answers ? room.answers[id] : -1;
-    const correct = ans === q.a;
-    const delta = correct ? 1 : (p.score > 0 ? -1 : 0);
-    prev[id] = Math.max(0, p.score - delta);
-  });
-  return prev;
 }
 
 async function advanceFromResult(room) {
@@ -1180,14 +1362,11 @@ async function advanceFromResult(room) {
   } else if (isLastQ) {
     await update(roomRef, { state:'round_summary' });
   } else {
-    const newQIdx = room.qIdx + 1;
-    const newQEnd = Date.now() + ANSWER_TIME * 1000;
-    await update(roomRef, { state:'question', qIdx:newQIdx, answers:{}, qEnd:newQEnd });
+    await update(roomRef, { state:'question', qIdx: room.qIdx + 1, answers:{}, qEnd: Date.now() + ANSWER_TIME * 1000 });
   }
 }
 
 /* ========== ROUND SUMMARY ========== */
-let rsKey = '';
 function renderRoundSummary(room) {
   const key = `rs_${room.round}`;
   if (rsKey !== key) {
@@ -1219,7 +1398,6 @@ async function advanceFromSummary() {
 window.advanceFromSummary = advanceFromSummary;
 
 /* ========== FINAL ========== */
-let finalDone = false;
 function renderFinal(room) {
   if (finalDone) return;
   finalDone = true;
@@ -1229,9 +1407,7 @@ function renderFinal(room) {
   const players = Object.entries(room.players || {}).sort((a,b) => b[1].score - a[1].score);
   const podium = document.getElementById('podium-wrap');
   podium.innerHTML = '';
-  // Podium order: 2nd, 1st, 3rd
-  const podiumOrder = [1, 0, 2];
-  podiumOrder.forEach(rank => {
+  [1, 0, 2].forEach(rank => {
     if (!players[rank]) return;
     const [id, p] = players[rank];
     const div = document.createElement('div');
@@ -1250,44 +1426,57 @@ function renderFinal(room) {
     if (i < 3) return;
     const row = document.createElement('div');
     row.className = 'final-row' + (id === myId ? ' me' : '');
-    row.innerHTML = `<div class="final-pos">${i + 1}°</div>
-      <div class="p-avatar" style="background:${p.color}20;color:${p.color};width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0">${p.emoji}</div>
+    row.innerHTML = `<div class="final-pos">${i+1}°</div>
+      <div style="width:24px;height:24px;border-radius:50%;background:${p.color}20;color:${p.color};display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0">${p.emoji}</div>
       <div class="final-pname">${esc(p.name)}</div>
       <div class="final-pscore">${p.score} pts</div>`;
     ranking.appendChild(row);
   });
-  const winner = players[0];
-  if (winner) speak(`Fim de jogo! Vencedor: ${winner[1].name} com ${winner[1].score} pontos!`);
+  if (players[0]) speak(`Fim de jogo! Vencedor: ${players[0][1].name} com ${players[0][1].score} pontos!`);
   setTimeout(launchConfetti, 500);
 }
 
+/* ========== PLAY AGAIN (reseta tudo) ========== */
 function playAgain() {
   finalDone = false;
+  rsKey = ''; resultKey = ''; questionKey = '';
+  themeScreenState = ''; drawDone = false;
+  firstAnswerTime = null; timerShortened = false;
   showScreen('lobby');
   document.getElementById('score-bar').classList.remove('visible');
-  rsKey = ''; resultKey = ''; questionKey = ''; themeScreenState = ''; drawDone = false;
-  if (isHost && roomRef) {
-    update(roomRef, { state:'lobby', round:0, qIdx:0, theme:null, lastTheme:null, roundQs:[], answers:{}, used:{}, order:[] });
+  if (isHost && roomRef && localRoom) {
+    const resetUpdates = { state:'lobby', round:0, qIdx:0, theme:null, lastTheme:null, roundQs:[], answers:{}, used:{}, order:[] };
+    Object.keys(localRoom.players || {}).forEach(id => {
+      resetUpdates[`players/${id}/score`] = 0;
+      resetUpdates[`players/${id}/streak`] = 0;
+      resetUpdates[`players/${id}/lastDelta`] = 0;
+    });
+    update(roomRef, resetUpdates);
   }
 }
 window.playAgain = playAgain;
 
-/* ========== SCOREBOARD ========== */
+/* ========== SCOREBOARD (com streaks) ========== */
 function renderScoreboard(room, elId) {
   const el = document.getElementById(elId);
   el.innerHTML = '';
   const players = Object.entries(room.players || {}).sort((a,b) => b[1].score - a[1].score);
   players.forEach(([id, p], i) => {
+    const streak = p.streak || 0;
+    let streakHtml = '';
+    if (streak >= 3) streakHtml = `<span class="streak-icon streak-fire">🔥</span>`;
+    else if (streak <= -3) streakHtml = `<span class="streak-icon streak-water">💧</span>`;
     const row = document.createElement('div');
     row.className = `sb-row rank-${i+1}` + (id === myId ? ' me' : '');
     row.innerHTML = `<div class="sb-rank">${i+1}°</div>
-      <div class="p-avatar" style="background:${p.color}20;color:${p.color};width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center">${p.emoji}</div>
-      <div class="sb-pname">${esc(p.name)}</div>
+      <div style="width:32px;height:32px;border-radius:50%;background:${p.color}20;color:${p.color};display:flex;align-items:center;justify-content:center">${p.emoji}</div>
+      <div class="sb-pname">${esc(p.name)}${streakHtml}</div>
       <div class="sb-pscore">${p.score}</div>`;
     el.appendChild(row);
   });
 }
 
+/* ========== SCORE BAR (com streaks) ========== */
 function updateScoreBar(room) {
   const bar = document.getElementById('score-bar');
   if (room.state === 'lobby' || room.state === 'drawing') { bar.classList.remove('visible'); return; }
@@ -1295,10 +1484,14 @@ function updateScoreBar(room) {
   bar.innerHTML = '';
   const players = Object.entries(room.players || {}).sort((a,b) => b[1].score - a[1].score);
   players.forEach(([id, p]) => {
+    const streak = p.streak || 0;
+    let streakHtml = '';
+    if (streak >= 3) streakHtml = `<span class="streak-icon streak-fire">🔥</span><span class="double-pts fire">x2</span>`;
+    else if (streak <= -3) streakHtml = `<span class="streak-icon streak-water">💧</span><span class="double-pts water">x2</span>`;
     const div = document.createElement('div');
     div.className = 'sb-player' + (id === myId ? ' me' : '');
     div.style.borderColor = id === myId ? p.color : 'transparent';
-    div.innerHTML = `<div class="sb-avatar" style="background:${p.color}30;color:${p.color}">${p.emoji}</div><span>${esc(p.name)}</span><span class="sb-score">${p.score}</span>`;
+    div.innerHTML = `<div class="sb-avatar" style="background:${p.color}30;color:${p.color}">${p.emoji}</div><span>${esc(p.name)}</span>${streakHtml}<span class="sb-score">${p.score}</span>`;
     bar.appendChild(div);
   });
 }
@@ -1328,14 +1521,12 @@ function startTimer(endTime) {
 }
 function stopTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
 
-/* ========== VOICE NARRATION ========== */
+/* ========== VOICE ========== */
 function speak(text) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'pt-BR';
-  u.rate = 1.05;
-  u.pitch = 1.1;
+  u.lang = 'pt-BR'; u.rate = 1.05; u.pitch = 1.1;
   const voices = window.speechSynthesis.getVoices();
   const ptBR = voices.find(v => v.lang === 'pt-BR') || voices.find(v => v.lang.startsWith('pt'));
   if (ptBR) u.voice = ptBR;
@@ -1350,24 +1541,18 @@ function launchConfetti() {
   for (let i = 0; i < 80; i++) {
     const c = document.createElement('div');
     c.className = 'confetti';
-    c.style.cssText = `left:${Math.random()*100}%;background:${colors[i%colors.length]};
-      width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;
-      border-radius:${Math.random()>.5?'50%':'2px'};
-      animation-duration:${2+Math.random()*3}s;
-      animation-delay:${Math.random()*2}s`;
+    c.style.cssText = `left:${Math.random()*100}%;background:${colors[i%colors.length]};width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${2+Math.random()*3}s;animation-delay:${Math.random()*2}s`;
     wrap.appendChild(c);
   }
   setTimeout(() => { wrap.innerHTML = ''; }, 6000);
 }
 
-/* ========== SCREEN MANAGEMENT ========== */
+/* ========== UTILS ========== */
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(`screen-${id}`);
   if (el) el.classList.add('active');
 }
-
-/* ========== TOAST ========== */
 let toastTO = null;
 function toast(msg, type='') {
   const el = document.getElementById('toast');
@@ -1376,33 +1561,27 @@ function toast(msg, type='') {
   if (toastTO) clearTimeout(toastTO);
   toastTO = setTimeout(() => { el.className = ''; }, 2500);
 }
-
-/* ========== UTILS ========== */
-function genRoomCode() {
-  return Array.from({length:5},()=>'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random()*26)]).join('');
-}
+function genRoomCode() { return Array.from({length:5},()=>'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random()*26)]).join(''); }
 function genId() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
 function shuffle(a) { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a; }
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
 function buildStars() {
   const c = document.getElementById('stars');
   for (let i = 0; i < 120; i++) {
     const s = document.createElement('div');
     s.className = 'star';
     const size = Math.random() * 2.5 + 0.5;
-    s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;
-      animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s`;
+    s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s`;
     c.appendChild(s);
   }
 }
 
-// Load voices on iOS/Safari
 window.speechSynthesis && window.speechSynthesis.getVoices();
 window.speechSynthesis && window.addEventListener('load', () => window.speechSynthesis.getVoices());
 
-// Enter key handlers
-document.getElementById('player-name').addEventListener('keydown', e => { if(e.key==='Enter') { const c=document.getElementById('room-code-inp').value.trim(); if(c) joinRoom(); else createRoom(); }});
+document.getElementById('player-name').addEventListener('keydown', e => {
+  if(e.key==='Enter') { const c=document.getElementById('room-code-inp').value.trim(); if(c) joinRoom(); else createRoom(); }
+});
 document.getElementById('room-code-inp').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
 document.getElementById('room-code-inp').addEventListener('keydown', e => { if(e.key==='Enter') joinRoom(); });
 
