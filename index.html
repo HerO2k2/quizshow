@@ -431,439 +431,6 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, set, get, update, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🎯 QuizShow Brasil</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-<style>
-/* ===================== RESET & ROOT ===================== */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#06061a;--bg2:#0d0d2b;--card:#121238;--card2:#1a1a45;
-  --gold:#FFD700;--gold2:#FFA500;--cyan:#00E5FF;--pink:#FF4DB8;
-  --green:#00FF88;--red:#FF3355;--purple:#7B2FBE;
-  --text:#fff;--text2:#aab4d4;--text3:#6677aa;
-  --border:rgba(255,215,0,0.2);--glow:rgba(255,215,0,0.15);
-  --r:12px;--r2:20px;
-}
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);
-  font-family:'Exo 2',sans-serif;font-size:16px;-webkit-tap-highlight-color:transparent}
-
-/* ===================== SCROLLBAR ===================== */
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg2)}
-::-webkit-scrollbar-thumb{background:var(--gold);border-radius:4px}
-
-/* ===================== STARFIELD BG ===================== */
-#stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-.star{position:absolute;background:#fff;border-radius:50%;animation:twinkle linear infinite}
-@keyframes twinkle{0%,100%{opacity:.1}50%{opacity:.9}}
-
-/* ===================== LAYOUT ===================== */
-#app{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.screen{display:none;width:100%;max-width:700px;padding:16px;animation:fadeIn .35s ease;flex-direction:column;align-items:center;max-height:100vh;overflow-y:auto}
-.screen.active{display:flex}
-@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-
-/* ===================== SCORE BAR ===================== */
-#score-bar{display:none;position:fixed;top:0;left:0;right:0;z-index:50;
-  background:linear-gradient(to bottom,rgba(6,6,26,.98),rgba(6,6,26,.7));
-  border-bottom:1px solid var(--border);padding:6px 12px;
-  flex-wrap:wrap;gap:6px;justify-content:center;backdrop-filter:blur(8px)}
-#score-bar.visible{display:flex}
-.sb-player{display:flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;
-  font-size:.75rem;font-weight:700;border:1px solid transparent;transition:.3s}
-.sb-player.me{border-color:var(--gold);background:rgba(255,215,0,.12)}
-.sb-avatar{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:900;flex-shrink:0}
-.sb-score{font-family:'Orbitron',monospace;font-size:.8rem;color:var(--gold)}
-.streak-icon{font-size:.9rem;animation:streakPop .4s cubic-bezier(.17,.67,.38,1.3)}
-@keyframes streakPop{from{transform:scale(0)}to{transform:scale(1)}}
-.streak-fire{color:#FF6B2B;filter:drop-shadow(0 0 4px rgba(255,107,43,.6))}
-.streak-water{color:#45B7D1;filter:drop-shadow(0 0 4px rgba(69,183,209,.6))}
-.double-pts{font-size:.65rem;padding:1px 5px;border-radius:8px;font-weight:700;margin-left:3px}
-.double-pts.fire{background:rgba(255,107,43,.2);color:#FF6B2B;border:1px solid rgba(255,107,43,.4)}
-.double-pts.water{background:rgba(69,183,209,.2);color:#45B7D1;border:1px solid rgba(69,183,209,.4)}
-
-/* ===================== TRICK BADGE ===================== */
-.trick-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;
-  font-size:.7rem;font-weight:700;background:rgba(255,77,184,.15);border:1px solid rgba(255,77,184,.4);
-  color:var(--pink);margin-bottom:6px;animation:fadeIn .3s ease}
-
-/* ===================== TYPOGRAPHY ===================== */
-h1{font-family:'Orbitron',monospace;font-size:clamp(1.6rem,5vw,2.8rem);font-weight:900;
-  text-align:center;letter-spacing:.05em;line-height:1.1}
-h2{font-family:'Orbitron',monospace;font-size:clamp(1rem,3vw,1.5rem);font-weight:700;text-align:center}
-h3{font-size:1rem;font-weight:700;color:var(--text2)}
-.gold{color:var(--gold)}.cyan{color:var(--cyan)}.pink{color:var(--pink)}
-.subtitle{color:var(--text2);font-size:.9rem;text-align:center;margin:.5rem 0}
-
-/* ===================== BUTTONS ===================== */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  padding:12px 28px;border-radius:var(--r);border:none;cursor:pointer;
-  font-family:'Exo 2',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.03em;
-  transition:all .2s;position:relative;overflow:hidden;white-space:nowrap}
-.btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.07);opacity:0;transition:.2s}
-.btn:hover::after{opacity:1}
-.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;box-shadow:0 0 20px rgba(255,215,0,.4)}
-.btn-gold:hover{transform:translateY(-2px);box-shadow:0 0 30px rgba(255,215,0,.6)}
-.btn-cyan{background:linear-gradient(135deg,var(--cyan),#0099cc);color:#000;box-shadow:0 0 20px rgba(0,229,255,.3)}
-.btn-outline{background:transparent;color:var(--text2);border:1px solid var(--border);font-size:.85rem;padding:8px 18px}
-.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
-.btn-danger{background:linear-gradient(135deg,var(--red),#cc0033);color:#fff}
-.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;box-shadow:none!important}
-.btn-sm{padding:8px 16px;font-size:.85rem}
-
-/* ===================== INPUTS ===================== */
-.inp{width:100%;padding:12px 16px;border-radius:var(--r);border:1.5px solid var(--border);
-  background:var(--card);color:var(--text);font-size:1rem;font-family:'Exo 2',sans-serif;
-  outline:none;transition:.2s}
-.inp:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,215,0,.15)}
-.inp::placeholder{color:var(--text3)}
-
-/* ===================== CARDS ===================== */
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:20px}
-.card-glow{box-shadow:0 0 30px var(--glow)}
-
-/* ===================== DIVIDER ===================== */
-.divider{display:flex;align-items:center;gap:12px;width:100%;margin:8px 0;color:var(--text3);font-size:.85rem}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
-
-/* ===================== SCREEN: HOME ===================== */
-#screen-home .logo{margin-bottom:8px}
-#screen-home .logo-title{background:linear-gradient(135deg,var(--gold),var(--gold2),var(--pink));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  filter:drop-shadow(0 0 20px rgba(255,215,0,.5))}
-#screen-home .tagline{color:var(--cyan);font-size:.85rem;letter-spacing:.2em;text-transform:uppercase;
-  font-family:'Orbitron',monospace;margin-bottom:24px}
-.home-card{width:100%;max-width:420px}
-.home-card .input-group{display:flex;flex-direction:column;gap:12px}
-.home-card .input-row{display:flex;gap:8px}
-
-/* ===================== SCREEN: SETUP ===================== */
-#screen-setup{gap:16px}
-#screen-setup .setup-steps{list-style:none;display:flex;flex-direction:column;gap:10px;width:100%}
-#screen-setup .setup-steps li{display:flex;gap:10px;align-items:flex-start;padding:10px;background:var(--card);border-radius:var(--r)}
-.step-num{width:28px;height:28px;min-width:28px;background:var(--gold);color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem}
-.step-text{font-size:.85rem;color:var(--text2);line-height:1.5}
-.step-text code{color:var(--cyan);background:rgba(0,229,255,.1);padding:1px 6px;border-radius:4px;font-size:.8rem}
-.setup-inp{width:100%;font-size:.8rem}
-
-/* ===================== SCREEN: LOBBY ===================== */
-.room-code-display{font-family:'Orbitron',monospace;font-size:2.5rem;font-weight:900;color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,.6);letter-spacing:.2em}
-.lobby-players{width:100%;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;transition:.3s}
-.lobby-player{display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--card);transition:.3s}
-.lobby-player.me{border-color:var(--gold);background:rgba(255,215,0,.08)}
-.lobby-player .p-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;flex-shrink:0}
-.lobby-player .p-name{font-weight:700;font-size:.95rem}
-.lobby-player .p-host{font-size:.7rem;color:var(--gold);background:rgba(255,215,0,.15);padding:1px 7px;border-radius:10px}
-.lobby-slot{border:1.5px dashed rgba(255,255,255,.1);background:rgba(255,255,255,.02);display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:.85rem}
-.lobby-status{font-size:.85rem;color:var(--text3);text-align:center}
-.copy-btn{font-size:.8rem;padding:4px 12px;background:rgba(255,215,0,.1);border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--gold);transition:.2s}
-.copy-btn:hover{background:rgba(255,215,0,.2)}
-.share-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center}
-
-/* ===================== SCREEN: DRAW ===================== */
-#screen-draw{gap:20px}
-.draw-wheel{width:280px;height:280px;border-radius:50%;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(circle,var(--card2),var(--bg2));box-shadow:0 0 50px rgba(255,215,0,.3);position:relative;overflow:hidden}
-.draw-wheel::before{content:'';position:absolute;inset:-2px;border-radius:50%;background:conic-gradient(var(--gold),var(--cyan),var(--pink),var(--gold));z-index:-1;animation:spinRing 3s linear infinite}
-@keyframes spinRing{to{transform:rotate(360deg)}}
-.draw-name{font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:700;text-align:center;padding:0 20px;transition:.05s}
-.draw-result{width:100%;display:flex;flex-direction:column;gap:8px}
-.draw-result-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:var(--r);border:1px solid var(--border);background:var(--card);animation:slideIn .4s ease}
-@keyframes slideIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
-.draw-position{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;width:36px;text-align:center}
-
-/* ===================== SCREEN: THEME ===================== */
-#screen-theme{gap:16px}
-.round-info-bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:4px}
-.round-badge{padding:4px 14px;border-radius:20px;font-size:.8rem;font-weight:700;background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.4);color:var(--gold);font-family:'Orbitron',monospace}
-.theme-picker-msg{font-size:1rem;color:var(--cyan);text-align:center;font-weight:600}
-.theme-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%}
-@media(min-width:500px){.theme-grid{grid-template-columns:repeat(4,1fr)}}
-.theme-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px 8px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--card);cursor:pointer;transition:all .2s;min-height:80px}
-.theme-card:hover:not(.disabled){border-color:var(--gold);background:rgba(255,215,0,.1);transform:translateY(-2px);box-shadow:0 0 15px rgba(255,215,0,.2)}
-.theme-card.disabled{opacity:.35;cursor:not-allowed}
-.theme-card.last-used{border-color:rgba(255,100,0,.5);cursor:not-allowed}
-.theme-card .t-icon{font-size:2rem}
-.theme-card .t-name{font-size:.75rem;font-weight:700;text-align:center;color:var(--text2)}
-.waiting-msg{color:var(--text3);font-size:.9rem;text-align:center;padding:16px;border:1px dashed var(--border);border-radius:var(--r);width:100%}
-
-/* ===================== SCREEN: QUESTION ===================== */
-#screen-question{gap:12px;padding-top:56px}
-.q-meta{display:flex;align-items:center;justify-content:space-between;width:100%;flex-wrap:wrap;gap:6px}
-.q-theme-badge{display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:.8rem;font-weight:700;background:var(--card);border:1px solid var(--border)}
-.q-progress{font-size:.8rem;color:var(--text3)}
-.timer-wrap{position:relative;width:80px;height:80px;flex-shrink:0}
-.timer-svg{transform:rotate(-90deg)}
-.timer-bg{fill:none;stroke:var(--card2);stroke-width:6}
-.timer-ring{fill:none;stroke:var(--cyan);stroke-width:6;stroke-linecap:round;stroke-dasharray:220;stroke-dashoffset:0;transition:stroke .5s,stroke-dashoffset .1s linear}
-.timer-ring.urgent{stroke:var(--red);animation:pulse .5s ease infinite alternate}
-@keyframes pulse{from{filter:none}to{filter:drop-shadow(0 0 6px var(--red))}}
-.timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:700}
-.q-row{display:flex;align-items:center;gap:12px;width:100%}
-.q-text{flex:1;font-size:clamp(.95rem,2.5vw,1.1rem);font-weight:600;line-height:1.5;padding:14px;background:var(--card);border-radius:var(--r);border-left:3px solid var(--gold)}
-.options-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
-.option-btn{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--card);cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.9rem;font-weight:600;color:var(--text);transition:all .2s;text-align:left;min-height:54px}
-.option-btn:hover:not(:disabled){border-color:var(--cyan);background:rgba(0,229,255,.1);transform:translateY(-1px)}
-.option-btn .opt-letter{width:26px;height:26px;min-width:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--card2);font-weight:700;font-size:.8rem;color:var(--text2);transition:.2s}
-.option-btn.selected .opt-letter{background:var(--cyan);color:#000}
-.option-btn.selected{border-color:var(--cyan);background:rgba(0,229,255,.12)}
-.option-btn:disabled{cursor:not-allowed}
-.option-btn.correct{border-color:var(--green)!important;background:rgba(0,255,136,.12)!important}
-.option-btn.correct .opt-letter{background:var(--green);color:#000}
-.option-btn.wrong{border-color:var(--red)!important;background:rgba(255,51,85,.12)!important}
-.option-btn.wrong .opt-letter{background:var(--red);color:#fff}
-.players-status{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%}
-.ps-player{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:.75rem;background:var(--card);border:1px solid var(--border);transition:.3s}
-.ps-player.answered{border-color:var(--green);background:rgba(0,255,136,.1)}
-.ps-player .ps-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:.3s}
-.ps-player.answered .ps-dot{background:var(--green)}
-.ps-player.disconnected{opacity:.4}
-
-/* ===================== SCREEN: Q RESULT ===================== */
-#screen-qresult{gap:14px;padding-top:56px}
-.result-header{font-size:1.5rem;font-weight:900;text-align:center;font-family:'Orbitron',monospace}
-.result-header.correct{color:var(--green);text-shadow:0 0 20px rgba(0,255,136,.5)}
-.result-header.wrong{color:var(--red);text-shadow:0 0 20px rgba(255,51,85,.5)}
-.correct-answer-box{padding:12px 18px;border-radius:var(--r);border:1.5px solid var(--green);background:rgba(0,255,136,.08);text-align:center;font-size:.9rem;width:100%}
-.correct-answer-box .ca-label{color:var(--text3);font-size:.75rem;margin-bottom:4px}
-.correct-answer-box .ca-text{font-weight:700;color:var(--green)}
-.player-answers-grid{display:flex;flex-direction:column;gap:8px;width:100%}
-.pa-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r);background:var(--card);border:1px solid var(--border)}
-.pa-name{flex:1;font-size:.9rem;font-weight:600;display:flex;align-items:center;gap:4px}
-.pa-answer{font-size:.85rem;color:var(--text2);flex:1}
-.pa-delta{font-family:'Orbitron',monospace;font-size:.9rem;font-weight:700;min-width:36px;text-align:right}
-.pa-delta.pos{color:var(--green)}.pa-delta.neg{color:var(--red)}.pa-delta.neutral{color:var(--text3)}
-.pa-row.p-correct{border-color:rgba(0,255,136,.3);background:rgba(0,255,136,.06)}
-.pa-row.p-wrong{border-color:rgba(255,51,85,.3);background:rgba(255,51,85,.06)}
-.next-q-info{font-size:.85rem;color:var(--text3);text-align:center}
-
-/* ===================== SCREEN: ROUND SUMMARY ===================== */
-#screen-round-summary{gap:14px;padding-top:66px}
-.round-summary-title{text-align:center;font-size:.85rem;color:var(--text3);font-family:'Orbitron',monospace;letter-spacing:.1em}
-.scoreboard{width:100%;display:flex;flex-direction:column;gap:8px}
-.sb-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--r);background:var(--card);border:1px solid var(--border);transition:.3s}
-.sb-row.rank-1{border-color:var(--gold);background:rgba(255,215,0,.08)}
-.sb-row.rank-2{border-color:rgba(192,192,192,.5);background:rgba(192,192,192,.05)}
-.sb-row.rank-3{border-color:rgba(205,127,50,.5);background:rgba(205,127,50,.05)}
-.sb-row.me{outline:2px solid var(--cyan);outline-offset:2px}
-.sb-rank{font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;width:30px;text-align:center}
-.rank-1 .sb-rank{color:var(--gold)}.rank-2 .sb-rank{color:#C0C0C0}.rank-3 .sb-rank{color:#CD7F32}
-.sb-pname{flex:1;font-weight:700;display:flex;align-items:center;gap:6px}
-.sb-pscore{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:var(--gold)}
-
-/* ===================== SCREEN: FINAL ===================== */
-#screen-final{gap:16px;padding-top:20px;padding-bottom:20px}
-.final-title{font-family:'Orbitron',monospace;font-size:clamp(1.1rem,4vw,1.8rem);font-weight:900;text-align:center;background:linear-gradient(135deg,var(--gold),var(--gold2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:8px;width:100%;margin:10px 0}
-.podium-item{display:flex;flex-direction:column;align-items:center;gap:6px}
-.podium-player-name{font-size:.8rem;font-weight:700;text-align:center;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.podium-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:900;border:2px solid transparent}
-.podium-item.rank-1 .podium-avatar{border-color:var(--gold);box-shadow:0 0 15px rgba(255,215,0,.5)}
-.podium-item.rank-2 .podium-avatar{border-color:#C0C0C0;box-shadow:0 0 10px rgba(192,192,192,.3)}
-.podium-item.rank-3 .podium-avatar{border-color:#CD7F32;box-shadow:0 0 10px rgba(205,127,50,.3)}
-.podium-block{border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-weight:900;font-size:1.4rem;width:80px}
-.podium-item.rank-1 .podium-block{height:90px;background:linear-gradient(to bottom,#FFD700,#FFA500);color:#000}
-.podium-item.rank-2 .podium-block{height:65px;background:linear-gradient(to bottom,#C0C0C0,#909090);color:#000}
-.podium-item.rank-3 .podium-block{height:45px;background:linear-gradient(to bottom,#CD7F32,#8B4513);color:#fff}
-.podium-score{font-family:'Orbitron',monospace;font-size:.75rem;color:var(--text3)}
-.final-ranking{width:100%;display:flex;flex-direction:column;gap:6px}
-.final-row{display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:var(--r);background:var(--card);border:1px solid var(--border);font-size:.9rem}
-.final-row.me{border-color:var(--cyan)}
-.final-pos{font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;width:28px;color:var(--text3)}
-.final-pname{flex:1;font-weight:600}
-.final-pscore{font-family:'Orbitron',monospace;font-size:.9rem;font-weight:700;color:var(--gold)}
-.confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:200;overflow:hidden}
-.confetti{position:absolute;top:-10px;width:10px;height:10px;animation:confettiFall linear forwards}
-@keyframes confettiFall{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
-
-/* ===================== TOAST ===================== */
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);padding:10px 20px;border-radius:var(--r);background:rgba(20,20,50,.95);border:1px solid var(--border);font-size:.9rem;white-space:nowrap;z-index:999;opacity:0;transition:.3s;backdrop-filter:blur(8px)}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-#toast.err{border-color:var(--red);color:var(--red)}
-#toast.ok{border-color:var(--green);color:var(--green)}
-
-/* ===================== LOADING ===================== */
-#screen-loading{gap:16px}
-.spinner{width:50px;height:50px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* ===================== MISC ===================== */
-.gap-8{gap:8px}.gap-12{gap:12px}.gap-16{gap:16px}.gap-20{gap:20px}
-.w100{width:100%}.flex-row{display:flex;flex-direction:row}.flex-col{display:flex;flex-direction:column}
-.center{justify-content:center;align-items:center}.mt8{margin-top:8px}.mt16{margin-top:16px}
-.text-sm{font-size:.85rem}.text-xs{font-size:.75rem}.text-center{text-align:center}
-.hidden{display:none!important}
-.pop{animation:popIn .3s cubic-bezier(.17,.67,.38,1.3)}
-@keyframes popIn{from{transform:scale(0.7);opacity:0}to{transform:scale(1);opacity:1}}
-</style>
-</head>
-<body>
-
-<div id="stars"></div>
-<div id="score-bar"></div>
-
-<div id="app">
-
-  <!-- LOADING -->
-  <div id="screen-loading" class="screen active">
-    <div class="spinner"></div>
-    <p class="subtitle">Conectando...</p>
-  </div>
-
-  <!-- SETUP -->
-  <div id="screen-setup" class="screen" style="max-width:600px;gap:14px">
-    <h1><span class="gold">🎯</span> QuizShow<br><span class="gold">Brasil</span></h1>
-    <p class="subtitle">Configure o Firebase para jogar em multiplayer</p>
-    <div class="card card-glow" style="width:100%">
-      <h3 style="margin-bottom:12px;color:var(--gold)">⚙️ Configuração Rápida (gratuito)</h3>
-      <ol class="setup-steps">
-        <li><span class="step-num">1</span><span class="step-text">Acesse <a href="https://console.firebase.google.com" target="_blank" style="color:var(--cyan)">console.firebase.google.com</a> → clique em <strong>"Criar Projeto"</strong></span></li>
-        <li><span class="step-num">2</span><span class="step-text">No projeto: <strong>Build → Realtime Database → Criar banco de dados</strong>. Modo de teste.</span></li>
-        <li><span class="step-num">3</span><span class="step-text"><strong>Configurações → Seus apps → Web</strong>. Registre e copie o <code>firebaseConfig</code></span></li>
-        <li><span class="step-num">4</span><span class="step-text">Cole os valores abaixo e clique em <strong>Salvar & Jogar</strong></span></li>
-      </ol>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
-        <input class="inp setup-inp" id="cfg-apiKey" placeholder="apiKey">
-        <input class="inp setup-inp" id="cfg-dbUrl" placeholder="databaseURL (https://...firebaseio.com)">
-        <input class="inp setup-inp" id="cfg-projId" placeholder="projectId">
-        <input class="inp setup-inp" id="cfg-appId" placeholder="appId">
-        <button class="btn btn-gold" onclick="saveConfig()">💾 Salvar &amp; Jogar</button>
-      </div>
-    </div>
-    <p class="text-xs" style="color:var(--text3);text-align:center">As configurações são salvas no seu navegador</p>
-  </div>
-
-  <!-- HOME -->
-  <div id="screen-home" class="screen" style="gap:12px">
-    <div class="logo">
-      <div class="tagline">Game Show Multiplayer</div>
-      <h1 class="logo-title">🎯 QuizShow Brasil</h1>
-    </div>
-    <div class="card card-glow home-card" style="gap:14px;display:flex;flex-direction:column">
-      <div class="input-group">
-        <input class="inp" id="player-name" placeholder="Seu nome de jogador..." maxlength="16" autocomplete="off">
-        <button class="btn btn-gold" onclick="createRoom()">🏠 Criar Sala</button>
-        <div class="divider">ou entre em uma sala</div>
-        <div class="input-row">
-          <input class="inp" id="room-code-inp" placeholder="Código da sala" maxlength="6" autocomplete="off" style="text-transform:uppercase;letter-spacing:.15em;font-family:'Orbitron',monospace">
-          <button class="btn btn-cyan" style="white-space:nowrap" onclick="joinRoom()">▶ Entrar</button>
-        </div>
-      </div>
-    </div>
-    <p class="text-xs" style="color:var(--text3);text-align:center">2-6 jogadores • 12 rodadas • 12 categorias</p>
-    <button class="btn btn-outline btn-sm" onclick="showSetup()">⚙️ Configurar Firebase</button>
-  </div>
-
-  <!-- LOBBY -->
-  <div id="screen-lobby" class="screen" style="gap:14px">
-    <h2>Sala <span class="gold" id="lobby-code" style="font-family:'Orbitron',monospace;letter-spacing:.15em"></span></h2>
-    <div class="share-row">
-      <span class="text-sm" style="color:var(--text3)">Compartilhe o código com os amigos!</span>
-      <button class="copy-btn" onclick="copyCode()">📋 Copiar</button>
-    </div>
-    <div class="lobby-players" id="lobby-players"></div>
-    <div class="lobby-status" id="lobby-status"></div>
-    <div id="host-settings-wrap" style="width:100%"></div>
-    <button class="btn btn-gold" id="start-btn" onclick="startGame()" disabled style="min-width:200px">🚀 Iniciar Jogo</button>
-    <button class="btn btn-outline btn-sm" onclick="leaveRoom()">← Sair</button>
-  </div>
-
-  <!-- DRAW -->
-  <div id="screen-draw" class="screen" style="gap:16px;padding-top:20px">
-    <h2 class="gold">🎲 Sorteando a Ordem!</h2>
-    <p class="subtitle">Quem jogará primeiro?</p>
-    <div class="draw-wheel" id="draw-wheel">
-      <div class="draw-name" id="draw-spinning-name">???</div>
-    </div>
-    <div class="draw-result" id="draw-result" style="display:none"></div>
-  </div>
-
-  <!-- THEME SELECT -->
-  <div id="screen-theme" class="screen" style="gap:12px;padding-top:20px">
-    <div class="round-info-bar">
-      <div class="round-badge" id="round-badge-theme">RODADA 1/12</div>
-    </div>
-    <h2>🎨 Escolha o Tema</h2>
-    <div class="theme-picker-msg" id="theme-picker-msg"></div>
-    <div id="theme-timer-wrap" style="width:100%;padding:0 8px">
-      <div style="width:100%;height:6px;background:var(--card2);border-radius:3px;overflow:hidden;margin-top:4px">
-        <div id="theme-timer-fill" style="height:100%;background:linear-gradient(90deg,var(--cyan),var(--gold));border-radius:3px;transition:width .1s linear;width:100%"></div>
-      </div>
-      <div id="theme-timer-txt" style="font-size:.75rem;color:var(--text3);text-align:center;margin-top:4px">20s</div>
-    </div>
-    <div class="theme-grid" id="theme-grid"></div>
-    <div class="waiting-msg hidden" id="theme-waiting-msg">⏳ Aguardando a escolha do tema...</div>
-  </div>
-
-  <!-- QUESTION -->
-  <div id="screen-question" class="screen" style="gap:10px;padding-top:60px">
-    <div class="trick-badge hidden" id="trick-badge">🪤 Pergunta de Pegadinha!</div>
-    <div class="q-meta">
-      <div class="q-theme-badge" id="q-theme-badge">⚽ Esportes</div>
-      <div class="q-progress" id="q-progress">Pergunta 1/4</div>
-    </div>
-    <div class="q-row">
-      <div class="q-text" id="q-text">Carregando pergunta...</div>
-      <div class="timer-wrap">
-        <svg class="timer-svg" width="80" height="80" viewBox="0 0 80 80">
-          <circle class="timer-bg" cx="40" cy="40" r="35"/>
-          <circle class="timer-ring" id="timer-ring" cx="40" cy="40" r="35"/>
-        </svg>
-        <div class="timer-num" id="timer-num">15</div>
-      </div>
-    </div>
-    <div class="options-grid" id="options-grid"></div>
-    <div class="players-status" id="players-status"></div>
-  </div>
-
-  <!-- QUESTION RESULT -->
-  <div id="screen-qresult" class="screen" style="gap:12px;padding-top:66px">
-    <div class="result-header" id="result-header">✅ Correto!</div>
-    <div class="correct-answer-box">
-      <div class="ca-label">Resposta Correta</div>
-      <div class="ca-text" id="ca-text"></div>
-    </div>
-    <div class="player-answers-grid" id="player-answers-grid"></div>
-    <p class="next-q-info" id="next-q-info"></p>
-  </div>
-
-  <!-- ROUND SUMMARY -->
-  <div id="screen-round-summary" class="screen" style="gap:12px;padding-top:66px">
-    <div class="round-summary-title" id="round-summary-title">FIM DA RODADA 1</div>
-    <h2 class="gold">📊 Placar</h2>
-    <div class="scoreboard" id="scoreboard"></div>
-    <button class="btn btn-gold" id="next-round-btn" onclick="advanceFromSummary()" style="margin-top:8px" disabled>▶ Próxima Rodada</button>
-  </div>
-
-  <!-- FINAL -->
-  <div id="screen-final" class="screen" style="gap:12px;padding-top:20px;padding-bottom:30px">
-    <div class="final-title">🏆 RESULTADO FINAL</div>
-    <div class="podium-wrap" id="podium-wrap"></div>
-    <div class="final-ranking" id="final-ranking"></div>
-    <button class="btn btn-gold" onclick="playAgain()" style="min-width:200px;margin-top:8px">🔄 Jogar Novamente</button>
-  </div>
-
-  <div class="confetti-wrap" id="confetti-wrap"></div>
-</div>
-
-<!-- EMOJI PICKER -->
-<div id="emoji-picker-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;align-items:center;justify-content:center" onclick="closeEmojiPicker(event)">
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:20px;max-width:340px;width:90%">
-    <div style="font-size:.9rem;color:var(--text2);text-align:center;margin-bottom:12px">Escolha seu avatar</div>
-    <div id="emoji-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px"></div>
-    <button class="btn btn-outline btn-sm" style="width:100%;margin-top:12px" onclick="document.getElementById('emoji-picker-overlay').style.display='none'">Fechar</button>
-  </div>
-</div>
-
-<div id="toast"></div>
-
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, set, get, update, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-
 /* ========== QUESTIONS ========== */
 const QUESTIONS = {
   brasil: [
@@ -897,9 +464,29 @@ const QUESTIONS = {
     {q:"Qual é o animal mais perigoso do Brasil em mortes humanas?",o:["Onça-pintada","Cascavel","Abelha africanizada","Capivara"],a:2},
     {q:"O que é a Festa de Parintins?",o:["Carnaval do Nordeste","Festival folclórico do Amazonas","Festa junina do Sul","Carnaval indígena"],a:1},
     {q:"Qual é o maior carnaval do mundo em público?",o:["Veneza","Rio de Janeiro","Salvador","Recife"],a:1},
+    {q:"Qual estado brasileiro tem o maior número de municípios?",o:["São Paulo","Minas Gerais","Bahia","Rio Grande do Sul"],a:1},
+    {q:"O Brasil tem fronteira com quantos países sul-americanos?",o:["8","9","10","11"],a:2},
+    {q:"Qual é a universidade mais antiga do Brasil?",o:["USP","UFRJ","UFBA","Universidade Federal de Ouro Preto"],a:2},
+    {q:"Em que estado fica o Pico da Neblina, ponto mais alto do Brasil?",o:["Pará","Roraima","Amazonas","Mato Grosso"],a:2},
+    {q:"Qual cidade brasileira tem o maior PIB per capita?",o:["São Paulo","Brasília","Porto Alegre","Itajaí (SC)"],a:3},
+    {q:"O Pantanal é o maior de quê no mundo?",o:["Floresta tropical","Savana","Planície alagável","Delta de rio"],a:2},
+    {q:"Qual presidente brasileiro governou por mais tempo no total?",o:["Getúlio Vargas","Lula","FHC","Dom Pedro II"],a:3},
+    {q:"A frase 'Independência ou Morte' foi documentada por quem primeiro?",o:["Dom Pedro I","Princesa Isabel","Padre Belchior","Um secretário real"],a:3},
+{q:"Qual estado brasileiro NÃO existia antes de 1988?",o:["Acre","Rondônia","Tocantins","Amapá"],a:2},
+{q:"Em que ano o Brasil sediou a Copa do Mundo pela primeira vez?",o:["1938","1942","1950","1954"],a:2},
+{q:"Qual é o nome oficial completo do Brasil?",o:["Brasil","República do Brasil","República Federativa do Brasil","Estados Unidos do Brasil"],a:2},
+{q:"Qual é o rio mais extenso inteiramente dentro do Brasil?",o:["São Francisco","Paraná","Tocantins","Madeira"],a:0},
+{q:"A Operação Lava Jato foi iniciada em qual cidade?",o:["São Paulo","Rio de Janeiro","Curitiba","Brasília"],a:2},
+{q:"Qual é o único estado brasileiro sem litoral que faz fronteira com outro país?",o:["Mato Grosso","Goiás","Minas Gerais","Mato Grosso do Sul"],a:3},
+{q:"Quantas línguas indígenas são faladas no Brasil atualmente (aproximado)?",o:["50","100","180","300"],a:3},
+{q:"Qual foi a primeira capital do Brasil antes de Salvador?",o:["Não havia — Salvador foi a primeira","Porto Seguro","Recife","São Paulo"],a:0,trick:true},
+{q:"O que é o 'sistema S' no Brasil?",o:["Sistema de saúde público","Conjunto de entidades como SENAI, SESC, SEBRAE","Sistema eleitoral","Rede de segurança social"],a:1},
+{q:"Qual é o estado com maior índice de desmatamento histórico?",o:["Pará","Mato Grosso","Rondônia","Amazonas"],a:1},
+{q:"Em que ano o Brasil adotou o Real como moeda?",o:["1991","1993","1994","1995"],a:2},
+{q:"Qual escritora brasileira ganhou o Prêmio Camões, considerado o Nobel lusófono?",o:["Clarice Lispector","Rachel de Queiroz","Lygia Fagundes Telles","Conceição Evaristo"],a:1},
   ],
   esportes: [
-    {q:"Qual desses jogadores NUNCA ganhou uma Copa do Mundo FIFA?",o:["Pelé","Messi (2022)","Cristiano Ronaldo","Romário"],a:2,trick:true},
+    {q:"Qual desses jogadores NUNCA ganhou uma Copa do Mundo FIFA?",o:["Giroud","Messi","Cristiano Ronaldo","Romário"],a:2,trick:true},
     {q:"Quantas Copas o Brasil ganhou SEGUIDAS entre 1958 e 1970?",o:["Duas","Três","Quatro","Nenhuma seguida"],a:1,trick:true},
     {q:"Qual time NÃO é da cidade de São Paulo?",o:["Corinthians","Palmeiras","Santos","São Paulo FC"],a:2,trick:true},
     {q:"Ayrton Senna morreu em qual corrida?",o:["GP da Itália","GP de Mônaco","GP de San Marino","GP do Brasil"],a:2,trick:true},
@@ -929,6 +516,27 @@ const QUESTIONS = {
     {q:"Qual desses NÃO é um golpe do judô?",o:["Ippon","Waza-ari","Shido","Kawaza"],a:3},
     {q:"Em quantos países o futebol é o esporte mais popular?",o:["Menos de 50","Entre 50 e 100","Mais de 100","Em todos"],a:2},
     {q:"Qual time é chamado de 'Timão'?",o:["Flamengo","São Paulo","Corinthians","Grêmio"],a:2},
+    {q:"Qual time é chamado de 'Macaca'?",o:["Vasco","Operário","Ponte Preta","Sport"],a:2},
+    {q:"Qual foi o único país a disputar todas as edições da Copa do Mundo?",o:["Alemanha","Brasil","Itália","Argentina"],a:1},
+{q:"Quantos gols Pelé marcou em Copas do Mundo?",o:["10","12","15","17"],a:0},
+{q:"Qual atleta ganhou mais medalhas olímpicas na história?",o:["Usain Bolt","Michael Phelps","Carl Lewis","Larisa Latynina"],a:1},
+{q:"Em que ano a seleção brasileira feminina de vôlei ganhou seu primeiro ouro olímpico?",o:["1996","2004","2008","2012"],a:1},
+{q:"Qual país sediou a Copa do Mundo de 1978?",o:["Brasil","Chile","Argentina","Uruguai"],a:2},
+{q:"Quem marcou o gol que eliminou o Brasil na Copa de 1998 (semifinal)?",o:["Suker","Zidane","Ronaldo","Bergkamp"],a:1},
+{q:"Qual é o recorde de gols marcados em uma única edição da Copa do Mundo?",o:["171 (1998)","141 (1954)","161 (1970)","172 (2014)"],a:3},
+{q:"No tênis, qual Grand Slam é jogado em quadra de saibro?",o:["Wimbledon","US Open","Roland Garros","Australian Open"],a:2},
+{q:"Qual boxeador é chamado de 'The Greatest'?",o:["Mike Tyson","Joe Frazier","Muhammad Ali","Floyd Mayweather"],a:2},
+{q:"Em qual esporte existe o termo 'hat-trick natural'?",o:["Futebol","Hóquei (3 gols seguidos sem intervalo)","Críquete","Polo"],a:1,trick:true},
+{q:"Qual seleção perdeu três finais consecutivas de Copa do Mundo?",o:["Holanda","Hungria","Tchecoslováquia","Alemanha"],a:0},
+{q:"Em qual ano o Brasil levou 7x1 da Alemanha?",o:["2010","2012","2014","2016"],a:2},
+{q:"Quem foi o maior artilheiro da história das Copas do Mundo até 2022?",o:["Ronaldo Nazário","Miroslav Klose","Gerd Müller","Pelé"],a:1},
+{q:"Qual esporte tem mais federados no mundo?",o:["Futebol","Tênis de mesa","Badminton","Xadrez"],a:1,trick:true},
+{q:"No beisebol, quantos strikes eliminam o batedor?",o:["2","3","4","5"],a:1},
+{q:"Qual é o troféu mais antigo do esporte profissional?",o:["Copa do Mundo FIFA","Copa Stanley (NHL)","Ryder Cup","Copa América"],a:1},
+{q:"Quem ganhou o primeiro Grand Slam do tênis (todos os 4 torneios no mesmo ano)?",o:["Roger Federer","Pete Sampras","Don Budge","Rod Laver"],a:2},
+{q:"Qual país ganhou mais medalhas de ouro na história das Olimpíadas?",o:["Rússia/URSS","China","Grã-Bretanha","EUA"],a:3},
+{q:"No xadrez, qual peça pode pular outras peças?",o:["Bispo","Torre","Rainha","Cavalo"],a:3},
+{q:"Qual foi o primeiro brasileiro a vencer o Campeonato Brasileiro de Fórmula 1?",o:["Emerson Fittipaldi","Nelson Piquet","Ayrton Senna","Rubens Barrichello"],a:0},
   ],
   ciencias: [
     {q:"Qual desses NÃO é um planeta do Sistema Solar?",o:["Netuno","Saturno","Plutão","Urano"],a:2,trick:true},
@@ -961,6 +569,26 @@ const QUESTIONS = {
     {q:"Quantos litros de sangue um adulto tem?",o:["2-3 litros","4-6 litros","7-8 litros","9-10 litros"],a:1},
     {q:"O que é a Lei da Gravidade de Newton?",o:["Corpos se repelem","Corpos se atraem proporcionalmente às massas","A Terra gira em torno do Sol","Energia não se cria nem destrói"],a:1},
     {q:"O que é um buraco negro?",o:["Estrela muito fria","Região de gravidade extrema","Planeta morto","Cometa gigante"],a:1},
+    {q:"Qual é o único metal líquido em temperatura ambiente?",o:["Gálio","Bromo","Mercúrio","Césio"],a:2,trick:true},
+{q:"Quantas dimensões a Teoria das Cordas propõe (versão mais aceita)?",o:["4","7","10 ou 11","26"],a:2},
+{q:"Qual é o elemento mais eletronegativo da tabela periódica?",o:["Oxigênio","Nitrogênio","Cloro","Flúor"],a:3},
+{q:"O que é a 'constante de Planck'?",o:["Velocidade da luz no vácuo","Relação entre energia e frequência de fótons","Carga do elétron","Constante gravitacional"],a:1},
+{q:"Qual organela celular tem seu próprio DNA separado do núcleo?",o:["Ribossomo","Retículo endoplasmático","Mitocôndria","Complexo de Golgi"],a:2},
+{q:"O que é 'antimatéria'?",o:["Matéria mais pesada que o normal","Partículas com carga oposta à matéria comum","Matéria de outro universo","Energia escura"],a:1},
+{q:"Qual é o nome do processo pelo qual as estrelas produzem energia?",o:["Fissão nuclear","Fusão nuclear","Reação química","Combustão"],a:1},
+{q:"Quantos átomos de carbono existem em 12 gramas de carbono puro?",o:["1 trilhão","6,02 x 10²³","1,38 x 10²³","9,11 x 10³¹"],a:1},
+{q:"Qual gás é responsável pelo efeito estufa em maior quantidade na atmosfera terrestre?",o:["CO2","Metano","Óxido nitroso","Vapor d'água"],a:3,trick:true},
+{q:"O que é a 'Paradoxo de Fermi'?",o:["Por que nada ultrapassa a velocidade da luz","Por que não encontramos vida extraterrestre se o universo é tão vasto","Por que a matéria existe","A impossibilidade do movimento perpétuo"],a:1},
+{q:"Qual é o pH do sangue humano saudável?",o:["6,8","7,0","7,4","7,8"],a:2},
+{q:"Qual é o nome da camada mais interna da Terra?",o:["Manto","Crosta","Núcleo interno sólido","Astenosfera"],a:2},
+{q:"Quantos pares de nervos cranianos tem o ser humano?",o:["8","10","12","14"],a:2},
+{q:"Qual é a partícula subatômica responsável pela identidade de um elemento químico?",o:["Nêutron","Elétron","Próton","Meson"],a:2},
+{q:"O que é 'bioluminescência'?",o:["Luz artificial de origem biológica","Produção de luz por organismos vivos via reação química","Fotossíntese em animais","Reflexo de luz em escamas"],a:1},
+{q:"Qual estrutura do DNA armazena a informação genética?",o:["A dupla hélice","A sequência de bases nitrogenadas","O açúcar desoxirribose","O fosfato"],a:1},
+{q:"Em física, o que é 'entropia'?",o:["Energia cinética de um sistema","Medida de desordem ou dispersão de energia","Força gravitacional","Pressão de um gás"],a:1},
+{q:"Qual é o nome do telescópio que substituiu o Hubble em 2021?",o:["Telescópio Kepler","Telescópio James Webb","Telescópio Chandra","Telescópio Spitzer"],a:1},
+{q:"O que a vacina de RNA mensageiro (mRNA) faz no corpo?",o:["Injeta vírus mortos","Instrui células a produzir proteína para gerar imunidade","Introduz anticorpos prontos","Ativa células T diretamente"],a:1},
+{q:"Qual é o nome do experimento que demonstrou a dualidade onda-partícula?",o:["Experimento de Rutherford","Experimento da dupla fenda","Experimento de Millikan","Experimento de Thomson"],a:1},
   ],
   historia: [
     {q:"Qual evento aconteceu ANTES da Independência do Brasil?",o:["Abolição da escravidão","Chegada da família real ao Brasil","Proclamação da República","Guerra do Paraguai"],a:1,trick:true},
@@ -993,6 +621,26 @@ const QUESTIONS = {
     {q:"Em que ano terminou a Segunda Guerra?",o:["1943","1944","1945","1946"],a:2},
     {q:"Qual país inventou a imprensa com tipos móveis?",o:["China","Coreia","Alemanha (Gutenberg)","Holanda"],a:2},
     {q:"Em que ano foi fundada a cidade de Roma?",o:["753 a.C.","509 a.C.","264 a.C.","27 a.C."],a:0},
+    {q:"Qual foi a causa imediata da Primeira Guerra Mundial?",o:["Rivalidade colonial","Assassinato do Arquiduque Franz Ferdinand","Crise econômica europeia","Invasão da Sérvia"],a:1},
+{q:"O Egito Antigo durou aproximadamente quantos anos?",o:["500 anos","1.000 anos","2.000 anos","3.000 anos"],a:3},
+{q:"Qual país foi o primeiro a conceder o voto feminino?",o:["EUA","Grã-Bretanha","Nova Zelândia","França"],a:2},
+{q:"O que foi a 'Solução Final' durante a Segunda Guerra?",o:["Rendição da Alemanha","Plano nazista de extermínio dos judeus","Acordo de paz entre aliados","Invasão da URSS"],a:1},
+{q:"Qual civilização inventou o zero como número?",o:["Egípcios","Gregos","Maias e indianos (independentemente)","Romanos"],a:2},
+{q:"Quantos anos durou o Império Romano do Ocidente?",o:["Cerca de 200 anos","Cerca de 500 anos","Cerca de 800 anos","Cerca de 1000 anos"],a:1},
+{q:"O que foi a 'Marcha do Sal' de Gandhi?",o:["Greve de fome","Protesto contra o imposto britânico sobre o sal","Manifestação religiosa","Caminhada simbólica até Nova Delhi"],a:1},
+{q:"Qual foi o primeiro país a abolir a escravatura?",o:["Inglaterra","França","Haiti","EUA"],a:2},
+{q:"Quem foi Espartaco?",o:["General romano","Líder de uma revolta de escravos em Roma","Filósofo grego","Rei da Macedônia"],a:1},
+{q:"Qual guerra foi chamada de 'a guerra que acabaria com todas as guerras'?",o:["Segunda Guerra Mundial","Guerra da Coreia","Primeira Guerra Mundial","Guerra Franco-Prussiana"],a:2},
+{q:"Em qual batalha Napoleão foi definitivamente derrotado?",o:["Trafalgar","Leipzig","Waterloo","Borodino"],a:2},
+{q:"O que foi o 'Plano Marshall'?",o:["Plano de ataque dos EUA à URSS","Programa americano de reconstrução econômica da Europa pós-guerra","Aliança militar da OTAN","Acordo de divisão da Alemanha"],a:1},
+{q:"Qual foi a duração da Guerra dos Cem Anos?",o:["Exatamente 100 anos","116 anos","87 anos","130 anos"],a:1,trick:true},
+{q:"Qual líder histórico disse 'Veni, vidi, vici' (Vim, vi, venci)?",o:["Alexandre o Grande","Júlio César","Napoleão","Augusto"],a:1},
+{q:"Em qual país ocorreu o genocídio de Ruanda (1994)?",o:["Congo","Uganda","Ruanda","Burundi"],a:2},
+{q:"O que foi a 'Noite dos Cristais' (Kristallnacht)?",o:["Batalha naval durante a 1ª Guerra","Pogrom antissemita na Alemanha nazista em 1938","Queda do Muro de Berlim","Ataque à embaixada americana"],a:1},
+{q:"Qual imperador romano tornaram o Cristianismo religião oficial do Império?",o:["Constantino","Teodósio","Nero","Diocleciano"],a:1},
+{q:"Quem foi o último czar da Rússia?",o:["Alexandre III","Nicolau I","Nicolau II","Alexandre II"],a:2},
+{q:"O que é a 'Magna Carta' (1215)?",o:["A Constituição americana original","Documento que limitou os poderes do rei inglês","Tratado de paz medieval","Declaração dos Direitos do Homem britânica"],a:1},
+{q:"Qual foi o nome do projeto americano que criou a bomba atômica?",o:["Projeto Apolo","Projeto Manhattan","Projeto Ulam","Operação Overload"],a:1},
   ],
   geografia: [
     {q:"Qual é a capital da Austrália? (Cuidado!)",o:["Sydney","Melbourne","Canberra","Brisbane"],a:2,trick:true},
@@ -1025,6 +673,26 @@ const QUESTIONS = {
     {q:"Qual rio separa Brasil e Argentina nas Cataratas?",o:["Rio Paraná","Rio Iguaçu","Rio Uruguai","Rio da Prata"],a:1},
     {q:"Qual é a língua oficial do Brasil?",o:["Espanhol","Inglês","Português","Francês"],a:2},
     {q:"Qual é o maior lago de água doce do mundo?",o:["Lago Titicaca","Mar Cáspio","Lago Superior","Lago Vitória"],a:2},
+    {q:"Qual é o país com mais lagos de água doce do mundo?",o:["Brasil","Rússia","EUA","Canadá"],a:3},
+{q:"Qual é a cidade mais populosa do hemisfério sul?",o:["Buenos Aires","São Paulo","Sydney","Joanesburgo"],a:1},
+{q:"Por quantos países o rio Amazonas passa?",o:["1 (só Brasil)","2","3","4"],a:1,trick:true},
+{q:"Qual é o continente com mais países?",o:["Ásia","América","África","Europa"],a:2},
+{q:"Qual é o único país do mundo que é completamente cercado por outro país?",o:["Mônaco","Vaticano","San Marino","Lesoto"],a:3,trick:true},
+{q:"Em qual oceano está localizada a Fossa das Marianas?",o:["Atlântico","Índico","Ártico","Pacífico"],a:3},
+{q:"Qual é o país com a maior fronteira terrestre do mundo?",o:["Rússia","China","Brasil","EUA"],a:0},
+{q:"Quantos países formam a União Europeia atualmente?",o:["25","27","28","30"],a:1},
+{q:"Qual é a capital mais alta do mundo (altitude)?",o:["Quito","La Paz","Bogotá","Katmandu"],a:1},
+{q:"Por onde passa o Trópico de Capricórnio no Brasil?",o:["Pelo Nordeste","Pela Região Norte","Pelo centro-sul (SP, MS, PR)","Só pelo Rio de Janeiro"],a:2},
+{q:"Qual é o único país da América do Sul com costa no Pacífico e no Atlântico?",o:["Colômbia","Venezuela","Equador","Nenhum — impossível geograficamente"],a:3,trick:true},
+{q:"Qual é a maior ilha do mundo?",o:["Austrália","Groenlândia","Bornéu","Nova Guiné"],a:1,trick:true},
+{q:"Em qual país fica o deserto de Atacama, o mais seco do mundo?",o:["Peru","Argentina","Chile","Bolívia"],a:2},
+{q:"Qual é o único mar interior sem saída para o oceano?",o:["Mar Morto","Mar Cáspio","Mar de Aral","Mar Negro"],a:1,trick:true},
+{q:"Quantos fusos horários tem o Brasil?",o:["2","3","4","5"],a:2},
+{q:"Qual é o país com maior número de vulcões ativos?",o:["Japão","Indonésia","Filipinas","Islândia"],a:1},
+{q:"Qual cidade é chamada de 'A Cidade Eterna'?",o:["Atenas","Jerusalém","Roma","Cairo"],a:2},
+{q:"Qual é a língua mais falada da África?",o:["Árabe","Swahili","Hauçá","Zulu"],a:0},
+{q:"Qual é o país com mais pirâmides do mundo?",o:["Egito","México","Peru","Sudão"],a:3,trick:true},
+{q:"Qual é o nome do estreito que separa Europa e África?",o:["Estreito de Suez","Estreito de Gibraltar","Estreito de Bab-el-Mandeb","Canal da Mancha"],a:1},
   ],
   cultura: [
     {q:"Quem criou o personagem do Batman?",o:["Stan Lee","Bob Kane e Bill Finger","Jack Kirby","Neil Gaiman"],a:1,trick:true},
@@ -1057,6 +725,26 @@ const QUESTIONS = {
     {q:"Quem interpreta Hermione Granger nos filmes?",o:["Keira Knightley","Emma Roberts","Emma Watson","Bonnie Wright"],a:2},
     {q:"Qual é o nome do mordomo do Batman?",o:["James Gordon","Lucius Fox","Alfred Pennyworth","Dick Grayson"],a:2},
     {q:"Qual estúdio produziu 'Toy Story'?",o:["DreamWorks","Blue Sky","Pixar","Walt Disney Animation"],a:2},
+    {q:"Qual foi o primeiro filme a arrecadar mais de 1 bilhão de dólares?",o:["Titanic","Jurassic Park","O Rei Leão (1994)","E.T."],a:1,trick:true},
+{q:"Qual personagem diz a frase 'I'll be back'?",o:["Predador","RoboCop","O Exterminador do Futuro","Judge Dredd"],a:2},
+{q:"Em 'Breaking Bad', qual é o pseudônimo de Walter White?",o:["El Chapo","Heisenberg","Los Pollos","El Profesor"],a:1},
+{q:"Qual é o nome da agência de espionagem onde James Bond trabalha?",o:["CIA","NSA","MI6","GCHQ"],a:2},
+{q:"Em 'O Senhor dos Anéis', em quantas partes Tolkien publicou o livro originalmente?",o:["1","2","3","4"],a:2},
+{q:"Qual ator interpretou o Coringa ANTES de Heath Ledger em filmes?",o:["Jack Nicholson","Cesar Romero","Mark Hamill","Tommy Lee Jones"],a:0},
+{q:"Em 'Game of Thrones', qual é o lema da Casa Stark?",o:["Fire and Blood","A Lannister always pays his debts","Winter is Coming","Ours is the Fury"],a:2},
+{q:"Qual escritor criou o personagem Sherlock Holmes?",o:["Agatha Christie","Edgar Allan Poe","Arthur Conan Doyle","G.K. Chesterton"],a:2},
+{q:"Quantos filmes compõem a trilogia original de 'O Poderoso Chefão'?",o:["2","3","4","5"],a:1},
+{q:"Qual foi o primeiro videogame comercialmente bem-sucedido da história?",o:["Space Invaders","Pong","Pac-Man","Asteroids"],a:1,trick:true},
+{q:"Em qual série a personagem principal trabalha em uma agência de publicidade nos anos 60?",o:["Suits","Boardwalk Empire","Mad Men","The Crown"],a:2},
+{q:"Qual é o nome completo de 'Walter White' de Breaking Bad?",o:["Walter Hartwell White","Walter Henry White","Walter James White","Walter Bruce White"],a:0},
+{q:"Quem escreveu o livro original em que se baseia 'Duna' (Dune)?",o:["Isaac Asimov","Arthur C. Clarke","Frank Herbert","Ray Bradbury"],a:2},
+{q:"Em qual filme Marlon Brando interpreta o Padrinho?",o:["Apocalipse Now","O Poderoso Chefão","Ultimo Tango em Paris","A Streetcar Named Desire"],a:1},
+{q:"Qual série da HBO mostrou o desenvolvimento de inteligência artificial em um parque temático?",o:["Black Mirror","Halt and Catch Fire","Westworld","Humans"],a:2},
+{q:"Qual é o real nome de 'Homem de Ferro' nos quadrinhos?",o:["James Rhodes","Tony Stark","Howard Stark","Steve Rogers"],a:1},
+{q:"Em qual país foi produzida a série 'Dark', considerada uma das melhores da Netflix?",o:["Suécia","Noruega","Áustria","Alemanha"],a:3},
+{q:"Qual personagem diz 'May the odds be ever in your favor'?",o:["Katniss Everdeen","Effie Trinket","Presidente Snow","Haymitch"],a:1},
+{q:"Qual animação da Pixar foi a primeira a vencer o Oscar de Melhor Filme de Animação?",o:["Toy Story","Monstros S.A.","A Vida de Inseto","Shrek"],a:3,trick:true},
+{q:"Qual é o nome do mordomo robótico de Tony Stark antes de J.A.R.V.I.S.?",o:["H.O.M.E.R.","E.D.I.T.H.","B.U.D.D.Y.","Não havia predecessor"],a:3,trick:true},
   ],
   musica: [
     {q:"A banda Queen foi formada em qual país?",o:["EUA","Austrália","Inglaterra","Irlanda"],a:2,trick:true},
@@ -1089,6 +777,26 @@ const QUESTIONS = {
     {q:"Qual artista vendeu mais de 1 bilhão de discos?",o:["Elvis Presley","The Beatles","Michael Jackson","Madonna"],a:1},
     {q:"De qual país é originário o K-Pop?",o:["Japão","China","Coreia do Sul","Tailândia"],a:2},
     {q:"Qual instrumento é característico do Blues?",o:["Violino","Guitarra elétrica","Oboé","Clarinete"],a:1},
+    {q:"Qual banda gravou o álbum 'The Dark Side of the Moon'?",o:["Led Zeppelin","Pink Floyd","The Who","Genesis"],a:1},
+{q:"Quantas semanas 'The Dark Side of the Moon' ficou nas paradas americanas?",o:["94","200","741","Mais de 900"],a:3},
+{q:"Qual cantor brasileiro vendeu mais discos internacionalmente?",o:["Roberto Carlos","Sérgio Mendes","Astrud Gilberto","Gilberto Gil"],a:1,trick:true},
+{q:"O que significa 'sincopado' em música?",o:["Muito rápido","Muito lento","Acento fora do tempo forte","Sem ritmo definido"],a:2},
+{q:"Qual instrumento tem mais cordas: harpa ou violão?",o:["Violão (6)","Harpa (47 cordas aprox.)","São iguais","Depende do modelo"],a:1},
+{q:"Qual grupo musical ficou mais tempo no topo das paradas britânicas com um único álbum?",o:["The Beatles","Adele","Pink Floyd","ABBA"],a:2},
+{q:"Em que ano Cazuza faleceu?",o:["1988","1989","1990","1991"],a:2},
+{q:"Qual nota musical vem depois do 'Sol' na escala?",o:["Fá","Lá","Si","Ré"],a:1},
+{q:"Qual artista ficou mais semanas no topo do Billboard Hot 100 com uma única música?",o:["Mariah Carey","Drake","Lil Nas X","Ed Sheeran"],a:2},
+{q:"O que é um 'drop' em música eletrônica?",o:["Introdução do beat","Momento de maior impacto após o buildup","Fim da música","Solo instrumental"],a:1},
+{q:"Qual é o nome do estilo musical criado por João Gilberto nos anos 1950?",o:["Samba-canção","Bossa Nova","Tropicalismo","MPB"],a:1},
+{q:"Qual instrumento Jimi Hendrix tocava com a mão esquerda em um violão destro invertido?",o:["Baixo","Violão","Guitarra","Banjo"],a:2},
+{q:"Qual é o nome da ópera mais encenada no mundo?",o:["La Traviata","Carmen","A Flauta Mágica","Madama Butterfly"],a:1},
+{q:"O que é 'timbre' em música?",o:["Altura do som","Duração da nota","Qualidade que distingue sons de mesma frequência","Volume do som"],a:2},
+{q:"Qual cantor brasileiro foi o primeiro a se apresentar no Rock in Rio (1985)?",o:["Paralamas do Sucesso","Barão Vermelho","RPM","Kid Abelha"],a:1},
+{q:"Em qual ano Raul Seixas lançou 'Metamorfose Ambulante'?",o:["1971","1973","1975","1977"],a:1},
+{q:"Qual é o nome da técnica vocal que usa alternância entre voz normal e voz de cabeça?",o:["Vibrato","Falsete","Yodel","Melisma"],a:2},
+{q:"Qual artista tem mais números 1 no Billboard Hot 100?",o:["Mariah Carey","Michael Jackson","Drake","Beyoncé"],a:2},
+{q:"Qual banda foi formada pelos ex-membros dos Beatles após a separação?",o:["Nenhuma banda formal","Wings (Paul McCartney)","Plastic Ono Band e Wings","Todas as anteriores estão corretas"],a:3},
+{q:"O que é 'compasso binário' em música?",o:["Dois instrumentos tocando juntos","Compasso com dois tempos por unidade","Música de dois artistas","Ritmo com duas batidas por segundo"],a:1},
   ],
   gastronomia: [
     {q:"O que é 'acarajé'? (Cuidado!)",o:["Bolinho de feijão-fradinho frito em azeite de dendê","Bolinho de mandioca frita","Prato de peixe da Bahia","Bolo típico nordestino"],a:0,trick:true},
@@ -1121,6 +829,26 @@ const QUESTIONS = {
     {q:"Qual é o prato típico do Nordeste com carne de sol?",o:["Feijoada","Buchada","Baião de dois","Caldeirada"],a:2},
     {q:"De onde vem o prato 'shawarma'?",o:["Grécia","Turquia/Oriente Médio","Índia","Egito"],a:1},
     {q:"O que é 'ceviche'?",o:["Prato de arroz peruano","Peixe cru marinado em limão","Sopa colombiana","Carne grelhada mexicana"],a:1},
+    {q:"O que diferencia 'al dente' de massa cozida normalmente?",o:["Mais tempo de cozimento","Massa ainda um pouco firme ao morder","Adição de azeite durante cozimento","Massa cozida sem sal"],a:1},
+{q:"Qual é o ingrediente que dá cor ao açafrão e ao risoto milanês?",o:["Cúrcuma","Carotenoides","Crocina (do açafrão)","Annatto"],a:2},
+{q:"O que é 'umami'?",o:["Tempero japonês","O quinto gosto básico (sabor saboroso)","Tipo de fermentação","Molho de soja especial"],a:1},
+{q:"Qual é o método de cocção do ceviche?",o:["Frito","Grelhado","Marinado em ácido cítrico (sem calor)","Cozido em vapor"],a:2,trick:true},
+{q:"Qual é o país de origem do croissant?",o:["França","Itália","Áustria","Bélgica"],a:2,trick:true},
+{q:"O que é 'mise en place' na gastronomia?",o:["Tipo de prato francês","Organização e preparação de ingredientes antes de cozinhar","Apresentação do prato","Método de corte"],a:1},
+{q:"Qual é a diferença entre 'creme brûlée' e 'pudim'?",o:["Não há diferença","Creme brûlée leva creme e é caramelizado na superfície; pudim usa leite e é assado em banho-maria","Creme brûlée é mais doce","Pudim é francês, creme brûlée é brasileiro"],a:1},
+{q:"O que é 'maillard' na culinária?",o:["Técnica de corte","Reação química que dá cor e sabor ao dourar alimentos","Tipo de molho francês","Método de conserva"],a:1},
+{q:"Qual é o vinho mais caro já vendido em leilão?",o:["Pétrus","Romanée-Conti","Château Margaux","Screaming Eagle"],a:1},
+{q:"O que é 'gastrique' em culinária francesa?",o:["Tipo de queijo","Redução de vinagre e açúcar como base de molho","Técnica de assar","Corte específico de carne"],a:1},
+{q:"Qual é o ingrediente principal do 'miso' japonês?",o:["Arroz fermentado","Pasta de soja fermentada","Alga marinha","Peixe defumado"],a:1},
+{q:"O que são 'trufas' na gastronomia?",o:["Doces de chocolate","Fungos subterrâneos raros e caros","Tipo de cogumelo cultivado","Especiaria asiática"],a:1},
+{q:"Qual é o processo de fazer 'ghee'?",o:["Fermentar leite de búfala","Clarificar manteiga removendo sólidos e água","Defumar queijo","Envelhecer creme de leite"],a:1},
+{q:"O que é 'carpaccio'?",o:["Peixe cozido em vapor","Carne ou peixe cru fatiado finamente","Tipo de massa italiana","Molho à base de vinho"],a:1},
+{q:"Qual é o único queijo com denominação de origem que pode ser chamado de 'Champagne'?",o:["Champagne é vinho, não queijo — pegadinha!","Camembert de Normandie","Brie de Meaux","Époisses"],a:0,trick:true},
+{q:"O que é 'sous-vide'?",o:["Técnica de grelhar em alta temperatura","Cozimento em embalagem selada a vácuo em temperatura precisa","Método de defumar a frio","Fritura em óleo especial"],a:1},
+{q:"Qual especiaria é extraída do estigma de uma flor?",o:["Canela","Pimenta-do-reino","Açafrão","Noz-moscada"],a:2},
+{q:"O que é 'fermentação lática'?",o:["Produção de álcool por leveduras","Transformação de açúcar em ácido lático por bactérias (base do iogurte e chucrute)","Fermentação do vinho","Processo do vinagre"],a:1},
+{q:"Qual é o nome do corte de carne responsável pelo 'wagyu'?",o:["Wagyu é uma raça bovina japonesa, não um corte","Contrafilé","Picanha","Entrecôte"],a:0,trick:true},
+{q:"O que é 'burrata'?",o:["Queijo similar à muçarela com interior cremoso","Tipo de manteiga italiana","Massa fresca recheada","Creme de leite defumado"],a:0},
   ],
   youtube: [
     {q:"Qual canal foi o PRIMEIRO a atingir 100 milhões de inscritos?",o:["PewDiePie","T-Series","MrBeast","Justin Bieber"],a:0,trick:true},
@@ -1134,7 +862,7 @@ const QUESTIONS = {
     {q:"Qual vídeo tem mais visualizações de todos os tempos?",o:["Gangnam Style","Baby Shark","Despacito","Bohemian Rhapsody"],a:1},
     {q:"O que é um 'short' no YouTube?",o:["Vídeo longo","Vídeo vertical curto até 60s","Vídeo ao vivo","Podcast"],a:1},
     {q:"O que significa 'clickbait'?",o:["Vídeo viral","Thumbnail/título enganoso para atrair cliques","Comentário patrocinado","Parceria paga"],a:1},
-    {q:"O que é 'demonetização' no YouTube?",o:["Aumento de monetização","Suspensão dos ganhos de um vídeo","Novo formato de anúncio","Limite de visualizações"],a:1},
+    {q:"O que é 'desmonetização' no YouTube?",o:["Aumento de monetização","Suspensão dos ganhos de um vídeo","Novo formato de anúncio","Limite de visualizações"],a:1},
     {q:"O que é 'Super Chat' no YouTube?",o:["Comentário em destaque pago durante lives","Mensagem privada","Sistema de moderação","Recurso de tradução"],a:0},
     {q:"Qual foi o primeiro vídeo postado no YouTube?",o:["Charlie bit my finger","Me at the zoo","Evolution of Dance","Chocolate Rain"],a:1},
     {q:"Quem foi o primeiro YouTuber a atingir 50 milhões de inscritos?",o:["PewDiePie","Smosh","Ray William Johnson","Nigahiga"],a:0},
@@ -1145,9 +873,15 @@ const QUESTIONS = {
     {q:"Qual canal brasileiro ganhou fama com paródias e humor?",o:["Jovem Nerd","Porta dos Fundos","Nostalgia","Manual do Mundo"],a:1},
     {q:"O que significa 'VOD' no contexto de streaming?",o:["Vídeo ao Vivo","Video on Demand","Volume de Download","Vídeo Oficial Digital"],a:1},
     {q:"O que é 'endcard' no YouTube?",o:["Vinheta de abertura","Tela final com links clicáveis","Patrocínio exibido no vídeo","Legenda automática"],a:1},
-    {q:"O que significa 'subcribe' em português?",o:["Curtir","Compartilhar","Se inscrever","Comentar"],a:2},
+    {q:"O que significa 'subscribe' em português?",o:["Curtir","Compartilhar","Se inscrever","Comentar"],a:2},
     {q:"Qual é o nome do programa de monetização de Shorts do YouTube?",o:["YouTube Fund","YouTube Shorts Bonus","YouTube Partner Program (Shorts)","Shorts Creator Fund"],a:2},
     {q:"O que é 'community post' no YouTube?",o:["Vídeo curto","Publicação de texto/imagem no canal","Comentário fixado","Live exclusiva"],a:1},
+    {q:"Qual foi o primeiro vídeo do canal 'Berinbass'?",o:["Bebê Reborn","Felca","Speedrun","Pizza Tower"],a:3},
+    {q:"Qual foi o primeiro canal a atingir 10 milhões de inscritos no YouTube?",o:["Smosh","PewDiePie","Nigahiga","RayWilliamJohnson"],a:0},
+{q:"Quanto tempo de vídeo é enviado ao YouTube a cada hora?",o:["100 horas","500 horas","1.000 horas","Mais de 500 horas"],a:3},
+{q:"O que é 'AdSense' no contexto do YouTube?",o:["Sistema de moderação","Plataforma de anúncios do Google que paga criadores","Ferramenta de edição","Programa de parcerias exclusivo"],a:1},
+{q:"Qual youtuber ficou famoso pela série 'MrBeast Burger'?",o:["PewDiePie","Ninja","MrBeast","Markiplier"],a:2},
+{q:"Qual é o nome do sistema de algoritmo do YouTube que recomenda vídeos?",o:["RankBrain","Deep Neural Network Recommendation","YouTube Algorithm","Não tem nome oficial divulgado"],a:3},
   ],
   memes: [
     {q:"De qual filme é o meme 'This is Fine' (cachorro no fogo)?",o:["Não é de filme — é HQ/webcomic","Jurassic Park","The Office","Toy Story"],a:0,trick:true},
@@ -1175,10 +909,15 @@ const QUESTIONS = {
     {q:"O que significa o meme 'No cap'?",o:["Sem chapéu","Sério, sem mentira","Sem problema","Certo, confirmado"],a:1},
     {q:"De onde vem o meme 'Shooting Stars' (homem voando)?",o:["Vine","YouTube","TikTok","Instagram"],a:0},
     {q:"O que é 'copypasta' no contexto de memes?",o:["Texto colado como imagem","Texto longo copiado e colado repetidamente","Meme de culinária","Formato de vídeo"],a:1},
+    {q:"De onde vem o meme 'Pepe the Frog'?",o:["4chan","Reddit","Quadrinho 'Boy's Club' de Matt Furie","Twitter"],a:2},
+{q:"O que significa 'based' no contexto de memes?",o:["Baseado em fatos","Alguém que age com confiança sem se importar com opinião alheia","Informação confirmada","Meme antigo"],a:1},
+{q:"Qual é a origem do meme 'Giga Chad'?",o:["Personagem de HQ","Fotos editadas de Ernest Khalimov","Ator de filme","Personagem de anime"],a:1},
+{q:"O que é 'lore' no contexto de memes?",o:["Meme mais antigo","História e contexto acumulado de um personagem ou saga de memes","Tipo de formato","Meme explicativo"],a:1},
+{q:"De onde vem a expressão 'touch grass' usada em memes?",o:["Referência a jogo","Sugestão irônica de sair do computador e ter contato com a realidade","Meme de jardinagem","Gíria britânica"],a:1},
   ],
   jogos: [
     {q:"Qual jogo NÃO foi desenvolvido pela Nintendo?",o:["Super Mario","The Legend of Zelda","Sonic the Hedgehog","Metroid"],a:2,trick:true},
-    {q:"Minecraft foi criado por quem?",o:["Notch (Markus Persson)","Jeb_","Dinnerbone","Herobrine"],a:0,trick:true},
+    {q:"Minecraft foi criado por quem?",o:["Markus Persson","Jeb_","Dinnerbone","Herobrine"],a:0,trick:true},
     {q:"GTA V foi lançado em qual ano?",o:["2011","2012","2013","2014"],a:2,trick:true},
     {q:"Qual é o personagem PRINCIPAL de The Legend of Zelda?",o:["Zelda","Link","Ganon","Impa"],a:1,trick:true},
     {q:"Em qual país a Rockstar Games foi fundada?",o:["EUA","Reino Unido","Canadá","Austrália"],a:1,trick:true},
@@ -1207,6 +946,13 @@ const QUESTIONS = {
     {q:"O que é 'DLC'?",o:["Modo online","Conteúdo adicional pago/gratuito","Atualização de segurança","Liga de jogadores"],a:1},
     {q:"Qual é o nome do vilão principal de Mario?",o:["Wario","Bowser","Kamek","Koopa"],a:1},
     {q:"Qual plataforma de jogos é da Valve?",o:["Origin","Epic Games Store","Steam","GOG"],a:2},
+    {q:"Qual é o nome do protagonista de 'Cyberpunk 2077'?",o:["Johnny Silverhand","V (personalizável)","Jackie Welles","T-Bug"],a:1,trick:true},
+{q:"Qual é o jogo indie mais vendido de todos os tempos?",o:["Among Us","Undertale","Stardew Valley","Hollow Knight"],a:2},
+{q:"O que é 'roguelike' como gênero de jogo?",o:["Jogo de tiro em primeira pessoa","Jogo com morte permanente, geração procedural de mapas e reinício","Jogo de exploração aberta","Simulador de vida"],a:1},
+{q:"Qual empresa criou o motor gráfico Unreal Engine?",o:["Unity","Epic Games","EA","Valve"],a:1},
+{q:"Qual é o jogo mais longo (horas para completar) já feito?",o:["The Witcher 3","Persona 5","Dwarf Fortress","Fallout 4"],a:2},
+{q:"O que é 'permadeath' em jogos?",o:["Morte instantânea por inimigo","Quando o personagem morre definitivamente sem possibilidade de continuar","Dificuldade máxima","Modo online eliminatório"],a:1},
+{q:"Qual é o nome da moeda no universo de 'The Witcher'?",o:["Ouro","Coroa","Orens, novigraden e ducados","Florim"],a:2},
   ],
   geek: [
     {q:"Em 'Star Wars', quem é o pai de Luke Skywalker?",o:["Obi-Wan Kenobi","Han Solo","Darth Vader","O Imperador"],a:2,trick:true},
@@ -1239,924 +985,16 @@ const QUESTIONS = {
     {q:"Em 'Stranger Things', qual é o nome do vilão da Dimensão Invertida?",o:["Mind Flayer","Demogorgon","Vecna","Billy"],a:2},
     {q:"Qual é o nome do grupo de heróis de 'Guardians of the Galaxy'?",o:["Defensores","Guardiões da Galáxia","Nova Corps","Aniquiladores"],a:1},
     {q:"Em 'Dragon Ball Z', qual é a transformação mais conhecida de Goku?",o:["Kaioken","Super Saiyajin","Ultra Instinto","Ozaru"],a:1},
+    {q:"Qual é o nome da cidade natal de Superman?",o:["Metropolis","Gotham","Smallville","Krypton"],a:2,trick:true},
+{q:"Em 'Duna', o que é o 'espício' (spice melange)?",o:["Arma química","Substância que permite viagem espacial e prolonga a vida","Moeda local","Religião de Arrakis"],a:1},
+{q:"Qual é o nome do robô principal de 'Interestelar' (Interstellar)?",o:["HAL","TARS","CASE","R2D2"],a:1},
+{q:"Em 'Matrix', qual é o nome da cidade onde os humanos livres vivem?",o:["Zion","Babylon","Eden","Arcadia"],a:0},
+{q:"Qual é o nome do vilão principal de 'Cowboy Bebop'?",o:["Spike Spiegel","Vicious","Jet Black","Pierce Lowe"],a:1},
+{q:"Em 'The Last of Us', o fungo que causa a infecção é baseado em qual fungo real?",o:["Aspergillus","Ophiocordyceps (fungo de formigas zumbis)","Candida","Fusarium"],a:1},
+{q:"Qual é o nome do gênero literário que mistura estética vitoriana com tecnologia avançada?",o:["Cyberpunk","Dieselpunk","Steampunk","Solarpunk"],a:2},
+{q:"Em 'Fullmetal Alchemist', qual é a Lei Equivalente da Alquimia?",o:["Lei da Conservação da Matéria","Troca Equivalente — para criar, algo de igual valor deve ser sacrificado","Lei da Transmutação","Princípio da Energia Máxima"],a:1},
   ],
 };
-
-/* ========== CONSTANTS ========== */
-const TOTAL_ROUNDS = 12;
-const ANSWER_TIME = 15;
-const PLAYER_COLORS = ['#FF6B6B','#4ECDC4','#45B7D1','#96CEB4','#FFEAA7','#DDA0DD','#FF9F43','#54A0FF','#5F27CD','#01CBC6','#FF6B9D','#C8D6E5'];
-const PLAYER_EMOJIS = ['🦊','🐼','🦁','🐯','🦄','🐸'];
-const THEMES_META = {
-  brasil:     {name:'Brasil',        icon:'🇧🇷'},
-  esportes:   {name:'Esportes',      icon:'⚽'},
-  ciencias:   {name:'Ciências',      icon:'🔬'},
-  historia:   {name:'História',      icon:'📜'},
-  geografia:  {name:'Geografia',     icon:'🌍'},
-  cultura:    {name:'Cultura Pop',   icon:'🎬'},
-  musica:     {name:'Música',        icon:'🎵'},
-  gastronomia:{name:'Gastronomia',   icon:'🍽️'},
-  youtube:    {name:'YouTube',       icon:'▶️'},
-  memes:      {name:'Memes',         icon:'😂'},
-  jogos:      {name:'Jogos',         icon:'🎮'},
-  geek:       {name:'Mundo Geek',    icon:'🤓'},
-};
-
-/* ========== GLOBALS ========== */
-let db = null;
-let myId = null, myName = null;
-let roomId = null, isHost = false;
-let roomRef = null, roomListener = null;
-let localRoom = null;
-let timerInterval = null;
-let hasAnswered = false;
-let firstAnswerTime = null;
-let timerShortened = false;
-let questionKey = '';
-let resultKey = '';
-let rsKey = '';
-let drawDone = false;
-let themeScreenState = '';
-let finalDone = false;
-let pendingAdvance = false;
-let themeTimerInterval = null;
-let myEmoji = null;
-let TOTAL_ROUNDS = 12;
-let ANSWER_TIME = 15;
-let THEME_TIME = 20;
-let MAX_PLAYERS = 6;
-
-/* ========== FIREBASE CONFIG ========== */
-function getConfig() {
-  try { const s = localStorage.getItem('qsb_config'); return s ? JSON.parse(s) : null; } catch { return null; }
-}
-function saveConfig() {
-  const apiKey = document.getElementById('cfg-apiKey').value.trim();
-  const databaseURL = document.getElementById('cfg-dbUrl').value.trim();
-  const projectId = document.getElementById('cfg-projId').value.trim();
-  const appId = document.getElementById('cfg-appId').value.trim();
-  if (!apiKey || !databaseURL || !projectId || !appId) { toast('Preencha todos os campos!','err'); return; }
-  const cfg = { apiKey, databaseURL, projectId, storageBucket:`${projectId}.appspot.com`, messagingSenderId:'', appId };
-  localStorage.setItem('qsb_config', JSON.stringify(cfg));
-  toast('Configuração salva! Conectando...','ok');
-  setTimeout(() => location.reload(), 1200);
-}
-window.saveConfig = saveConfig;
-
-/* ========== INIT ========== */
-async function init() {
-  buildStars();
-  myId = localStorage.getItem('qsb_myid') || genId();
-  localStorage.setItem('qsb_myid', myId);
-  myEmoji = localStorage.getItem('qsb_emoji') || ALL_EMOJIS[Math.floor(Math.random()*ALL_EMOJIS.length)];
-  const cfg = getConfig();
-  if (!cfg) { showScreen('setup'); return; }
-  try {
-    const app = initializeApp(cfg);
-    db = getDatabase(app);
-    showScreen('home');
-  } catch(e) {
-    console.error(e);
-    showScreen('setup');
-    toast('Erro na configuração Firebase','err');
-  }
-}
-window.showSetup = () => showScreen('setup');
-
-/* ========== ROOM MANAGEMENT ========== */
-async function createRoom() {
-  const n = document.getElementById('player-name').value.trim();
-  if (!n) { toast('Digite seu nome!','err'); return; }
-  myName = n;
-  const code = genRoomCode();
-  roomId = code;
-  isHost = true;
-  const room = {
-    host: myId, state:'lobby', round:0, qIdx:0,
-    theme:null, lastTheme:null, roundQs:[], qEnd:0,
-    answers:{}, used:{},
-    settings:{ totalRounds:12, answerTime:15, themeTime:20, maxPlayers:6 },
-    players:{ [myId]: { name:n, score:0, streak:0, color:PLAYER_COLORS[0], emoji:myEmoji, connected:true } },
-    order:[], created: Date.now()
-  };
-  await set(ref(db, `rooms/${code}`), room);
-  listenRoom(code);
-  document.getElementById('lobby-code').textContent = code;
-  showScreen('lobby');
-}
-window.createRoom = createRoom;
-
-async function joinRoom() {
-  const n = document.getElementById('player-name').value.trim();
-  const code = document.getElementById('room-code-inp').value.trim().toUpperCase();
-  if (!n) { toast('Digite seu nome!','err'); return; }
-  if (!code || code.length < 4) { toast('Digite o código da sala!','err'); return; }
-  myName = n;
-  const snap = await get(ref(db, `rooms/${code}`));
-  if (!snap.exists()) { toast('Sala não encontrada!','err'); return; }
-  const room = snap.val();
-  if (room.state !== 'lobby') { toast('O jogo já começou!','err'); return; }
-  const players = room.players || {};
-  const pCount = Object.keys(players).length;
-  const maxP = room.settings?.maxPlayers || 6;
-  if (pCount >= maxP) { toast(`Sala cheia (máx ${maxP})!`,'err'); return; }
-  isHost = myId === room.host;
-  const idx = pCount;
-  await update(ref(db, `rooms/${code}/players/${myId}`),
-    { name:n, score:0, streak:0, color:PLAYER_COLORS[idx % PLAYER_COLORS.length], emoji:myEmoji, connected:true });
-  roomId = code;
-  listenRoom(code);
-  document.getElementById('lobby-code').textContent = code;
-  showScreen('lobby');
-}
-window.joinRoom = joinRoom;
-
-function listenRoom(code) {
-  if (roomListener) roomListener();
-  roomRef = ref(db, `rooms/${code}`);
-  roomListener = onValue(roomRef, snap => {
-    if (!snap.exists()) { toast('Sala encerrada','err'); leaveRoom(); return; }
-    localRoom = snap.val();
-    if (localRoom.settings) {
-      TOTAL_ROUNDS = localRoom.settings.totalRounds || 12;
-      ANSWER_TIME = localRoom.settings.answerTime || 15;
-      THEME_TIME = localRoom.settings.themeTime || 20;
-      MAX_PLAYERS = localRoom.settings.maxPlayers || 6;
-    }
-    handleRoomUpdate(localRoom);
-  });
-}
-
-/* ========== LEAVE ROOM (com herança de host) ========== */
-async function leaveRoom() {
-  if (roomListener) { roomListener(); roomListener = null; }
-  if (roomId && myId && db) {
-    try {
-      const snap = await get(ref(db, `rooms/${roomId}`));
-      if (snap.exists()) {
-        const room = snap.val();
-        const remaining = Object.keys(room.players || {}).filter(id => id !== myId);
-        if (remaining.length === 0) {
-          await remove(ref(db, `rooms/${roomId}`));
-        } else {
-          const updates = {};
-          updates[`players/${myId}`] = null;
-          if (room.host === myId) updates['host'] = remaining[0];
-          await update(ref(db, `rooms/${roomId}`), updates);
-        }
-      }
-    } catch(e) { console.error(e); }
-  }
-  stopThemeTimer();
-  stopTimer();
-  showScreen('home');
-  document.getElementById('score-bar').classList.remove('visible');
-  roomId = null; localRoom = null; isHost = false;
-}
-window.leaveRoom = leaveRoom;
-
-function copyCode() {
-  const code = document.getElementById('lobby-code').textContent;
-  navigator.clipboard.writeText(code).then(() => toast('Código copiado!','ok')).catch(() => {});
-}
-window.copyCode = copyCode;
-
-/* ========== EMOJI PICKER ========== */
-window.openEmojiPicker = function() {
-  const grid = document.getElementById('emoji-grid');
-  grid.innerHTML = '';
-  ALL_EMOJIS.forEach(em => {
-    const div = document.createElement('div');
-    div.style.cssText = 'font-size:1.6rem;padding:6px;border-radius:8px;cursor:pointer;text-align:center;transition:.2s;border:2px solid '+(em===myEmoji?'var(--gold)':'transparent')+';background:'+(em===myEmoji?'rgba(255,215,0,.15)':'transparent');
-    div.textContent = em;
-    div.onmouseenter = () => { if(em!==myEmoji) div.style.transform='scale(1.2)'; };
-    div.onmouseleave = () => { div.style.transform='scale(1)'; };
-    div.onclick = () => {
-      myEmoji = em;
-      localStorage.setItem('qsb_emoji', em);
-      if (roomId && myId && db) update(ref(db, `rooms/${roomId}/players/${myId}`), {emoji:em});
-      document.getElementById('emoji-picker-overlay').style.display='none';
-    };
-    grid.appendChild(div);
-  });
-  document.getElementById('emoji-picker-overlay').style.display='flex';
-};
-window.closeEmojiPicker = function(e) {
-  if (e && e.target === document.getElementById('emoji-picker-overlay'))
-    document.getElementById('emoji-picker-overlay').style.display='none';
-};
-
-/* ========== GAME START (reseta pontos) ========== */
-async function startGame() {
-  if (!isHost) return;
-  const players = localRoom.players;
-  const pArr = Object.keys(players);
-  if (pArr.length < 2) { toast('Precisa de pelo menos 2 jogadores!','err'); return; }
-  const order = shuffle([...pArr]);
-  const resetUpdates = { state:'drawing', order, round:1, qIdx:0, lastTheme:null, used:{} };
-  pArr.forEach(id => {
-    resetUpdates[`players/${id}/score`] = 0;
-    resetUpdates[`players/${id}/streak`] = 0;
-    resetUpdates[`players/${id}/lastDelta`] = 0;
-  });
-  await update(roomRef, resetUpdates);
-}
-window.startGame = startGame;
-
-/* ========== STATE MACHINE (com herança de host) ========== */
-function handleRoomUpdate(room) {
-  // Herança de host: se o host saiu, promover o próximo
-  if (room.players && room.host && !room.players[room.host]) {
-    const remaining = Object.keys(room.players);
-    if (remaining.length > 0 && remaining[0] === myId && !isHost) {
-      isHost = true;
-      update(roomRef, { host: myId });
-      toast('Você se tornou o Host da sala!','ok');
-    }
-  }
-  if (room.players && room.players[myId]) {
-    isHost = room.host === myId;
-  }
-  updateScoreBar(room);
-  switch(room.state) {
-    case 'lobby':            renderLobby(room); break;
-    case 'drawing':          renderDraw(room); break;
-    case 'theme_select':     renderThemeSelect(room); break;
-    case 'question':         renderQuestion(room); break;
-    case 'question_result':  renderQResult(room); break;
-    case 'round_summary':    renderRoundSummary(room); break;
-    case 'game_over':        renderFinal(room); break;
-  }
-}
-
-/* ========== LOBBY ========== */
-function renderLobby(room) {
-  if (!document.getElementById('screen-lobby').classList.contains('active')) {
-    document.getElementById('lobby-code').textContent = roomId;
-    showScreen('lobby');
-  }
-  const players = room.players || {};
-  const pArr = Object.entries(players);
-  const grid = document.getElementById('lobby-players');
-  grid.innerHTML = '';
-  pArr.forEach(([id, p]) => {
-    const div = document.createElement('div');
-    div.className = 'lobby-player' + (id === myId ? ' me' : '');
-    const isMe = id === myId;
-    div.innerHTML = `
-      <div style="width:38px;height:38px;border-radius:50%;background:${p.color}20;color:${p.color};display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;${isMe?'cursor:pointer;border:2px solid rgba(255,215,0,.4)':''}" ${isMe?'onclick="openEmojiPicker()" title="Clique para trocar"':''}>
-        ${p.emoji}
-      </div>
-      <div style="min-width:0;flex:1">
-        <div class="p-name" style="font-weight:700;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name)}</div>
-        ${isMe?'<div style="font-size:.6rem;color:var(--text3)">toque para trocar</div>':''}
-      </div>
-      ${id === room.host ? '<span class="p-host">HOST</span>' : ''}`;
-    grid.appendChild(div);
-  });
-  for (let i = pArr.length; i < 6; i++) {
-    const slot = document.createElement('div');
-    slot.className = 'lobby-player lobby-slot';
-    slot.textContent = 'Aguardando...';
-    grid.appendChild(slot);
-  }
-  const maxP = room.settings?.maxPlayers || 6;
-  grid.style.gridTemplateColumns = maxP > 6 ? 'repeat(3,1fr)' : 'repeat(2,1fr)';
-  const status = document.getElementById('lobby-status');
-  const startBtn = document.getElementById('start-btn');
-  if (isHost) {
-    startBtn.style.display = 'flex';
-    startBtn.disabled = pArr.length < 2;
-    status.textContent = pArr.length < 2 ? 'Aguardando mais jogadores...' : `${pArr.length} jogadores prontos!`;
-  } else {
-    startBtn.style.display = 'none';
-    status.textContent = 'Aguardando o host iniciar o jogo...';
-  }
-  renderHostSettings(room);
-}
-
-function renderHostSettings(room) {
-  const wrap = document.getElementById('host-settings-wrap');
-  if (!wrap) return;
-  const s = room.settings || {totalRounds:12,answerTime:15,themeTime:20,maxPlayers:6};
-  if (isHost) {
-    wrap.innerHTML = `
-      <div style="width:100%;background:var(--card2);border:1px solid rgba(255,215,0,.15);border-radius:var(--r);padding:12px 16px;margin-top:4px">
-        <div style="font-size:.72rem;color:var(--gold);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;font-family:'Orbitron',monospace">⚙️ Configurações da Partida</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          ${settingItem('Rodadas','totalRounds',s.totalRounds,'')}
-          ${settingItem('Tempo pergunta','answerTime',s.answerTime,'s')}
-          ${settingItem('Tempo tema','themeTime',s.themeTime,'s')}
-          ${settingItem('Máx. jogadores','maxPlayers',s.maxPlayers,'')}
-        </div>
-      </div>`;
-  } else {
-    wrap.innerHTML = `<div style="width:100%;background:var(--card2);border:1px solid rgba(255,255,255,.06);border-radius:var(--r);padding:8px 16px;margin-top:4px;text-align:center;font-size:.75rem;color:var(--text3)">
-      📋 ${s.totalRounds} rodadas • ${s.answerTime}s/pergunta • ${s.themeTime}s/tema • máx ${s.maxPlayers} jogadores</div>`;
-  }
-}
-function settingItem(label, key, val, unit) {
-  return `<div>
-    <div style="font-size:.72rem;color:var(--text3);font-weight:600;margin-bottom:4px">${label}</div>
-    <div style="display:flex;align-items:center;gap:6px">
-      <button onclick="changeSetting('${key}',-1)" style="width:24px;height:24px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text2);cursor:pointer;font-size:.8rem">−</button>
-      <span style="font-family:'Orbitron',monospace;font-size:.85rem;color:var(--gold);min-width:28px;text-align:center;font-weight:700">${val}${unit}</span>
-      <button onclick="changeSetting('${key}',1)" style="width:24px;height:24px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text2);cursor:pointer;font-size:.8rem">+</button>
-    </div>
-  </div>`;
-}
-window.changeSetting = async function(key, delta) {
-  if (!isHost || !roomRef) return;
-  const s = localRoom.settings || {totalRounds:12,answerTime:15,themeTime:20,maxPlayers:6};
-  const limits = {totalRounds:[4,30],answerTime:[5,60],themeTime:[5,60],maxPlayers:[2,12]};
-  const [min,max] = limits[key];
-  const newVal = Math.min(max, Math.max(min, (s[key]||min) + delta));
-  await update(ref(db, `rooms/${roomId}/settings`), {[key]:newVal});
-};
-
-/* ========== DRAW ========== */
-function renderDraw(room) {
-  if (!document.getElementById('screen-draw').classList.contains('active')) {
-    drawDone = false;
-    showScreen('draw');
-    document.getElementById('score-bar').classList.add('visible');
-    document.getElementById('draw-result').style.display = 'none';
-    animateDraw(room);
-  }
-}
-
-function animateDraw(room) {
-  if (drawDone) return;
-  drawDone = true;
-  const order = room.order;
-  const players = room.players;
-  const names = order.map(id => players[id]?.name || '?');
-  const wheel = document.getElementById('draw-spinning-name');
-  const allNames = Object.values(players).map(p => p.name);
-  speak('Sorteando a ordem dos jogadores!');
-  let i = 0, speed = 60, slowing = false;
-  const spin = setInterval(() => {
-    wheel.textContent = allNames[i % allNames.length];
-    wheel.style.color = PLAYER_COLORS[i % PLAYER_COLORS.length];
-    i++;
-    if (i > 30) slowing = true;
-    if (slowing) speed += 30;
-    if (speed > 500) {
-      clearInterval(spin);
-      wheel.textContent = names[0];
-      wheel.style.color = PLAYER_COLORS[0];
-      setTimeout(() => revealOrder(room, 0), 600);
-    }
-  }, speed);
-}
-
-function revealOrder(room, idx) {
-  const order = room.order;
-  const players = room.players;
-  const resultEl = document.getElementById('draw-result');
-  if (idx === 0) { resultEl.style.display = 'flex'; resultEl.innerHTML = ''; }
-  if (idx >= order.length) {
-    speak('Ordem sorteada! Começando a rodada 1!');
-    if (isHost) setTimeout(async () => { await update(roomRef, { state:'theme_select' }); }, 2500);
-    return;
-  }
-  const medals = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣'];
-  const p = players[order[idx]];
-  const item = document.createElement('div');
-  item.className = 'draw-result-item';
-  item.innerHTML = `<span class="draw-position" style="color:${p.color}">${medals[idx]}</span>
-    <div style="width:32px;height:32px;border-radius:50%;background:${p.color}20;color:${p.color};display:flex;align-items:center;justify-content:center">${p.emoji}</div>
-    <span style="font-weight:700">${esc(p.name)}</span>
-    ${order[idx] === myId ? '<span style="font-size:.75rem;color:var(--cyan);margin-left:auto">Você!</span>' : ''}`;
-  resultEl.appendChild(item);
-  speak(`${idx + 1}. ${p.name}`);
-  setTimeout(() => revealOrder(room, idx + 1), 800);
-}
-
-/* ========== THEME SELECT ========== */
-function renderThemeSelect(room) {
-  const key = `${room.round}_${room.lastTheme}`;
-  if (themeScreenState !== key) {
-    themeScreenState = key;
-    showScreen('theme');
-    document.getElementById('round-badge-theme').textContent = `RODADA ${room.round}/${TOTAL_ROUNDS}`;
-    const pickerOrder = (room.round - 1) % room.order.length;
-    const pickerId = room.order[pickerOrder];
-    const picker = room.players[pickerId];
-    const isMe = pickerId === myId;
-    document.getElementById('theme-picker-msg').textContent = isMe
-      ? '🎯 Você escolhe o tema desta rodada!'
-      : `🎯 ${picker?.name} está escolhendo o tema...`;
-    const grid = document.getElementById('theme-grid');
-    grid.innerHTML = '';
-    Object.entries(THEMES_META).forEach(([k, meta]) => {
-      const isLast = k === room.lastTheme;
-      const div = document.createElement('div');
-      div.className = 'theme-card' + (isLast ? ' last-used disabled' : '');
-      div.innerHTML = `<div class="t-icon">${meta.icon}</div><div class="t-name">${meta.name}</div>${isLast ? '<div style="font-size:.65rem;color:var(--red)">Última rodada</div>' : ''}`;
-      if (isMe && !isLast) div.onclick = () => selectTheme(k);
-      grid.appendChild(div);
-    });
-    const waiting = document.getElementById('theme-waiting-msg');
-    if (!isMe) waiting.classList.remove('hidden');
-    else waiting.classList.add('hidden');
-    if (isMe) speak(`Rodada ${room.round}! Você escolhe o tema!`);
-    else speak(`Rodada ${room.round}! ${picker?.name} está escolhendo o tema.`);
-    // Start theme countdown
-    startThemeTimer(THEME_TIME, pickerId, room);
-  }
-}
-
-function startThemeTimer(duration, pickerId, room) {
-  stopThemeTimer();
-  const fill = document.getElementById('theme-timer-fill');
-  const txt = document.getElementById('theme-timer-txt');
-  const endTime = Date.now() + duration * 1000;
-  themeTimerInterval = setInterval(() => {
-    const remaining = Math.max(0, (endTime - Date.now()) / 1000);
-    const pct = (remaining / duration) * 100;
-    if (fill) {
-      fill.style.width = pct + '%';
-      fill.style.background = remaining <= 5 ? 'linear-gradient(90deg,var(--red),var(--gold2))' : 'linear-gradient(90deg,var(--cyan),var(--gold))';
-    }
-    if (txt) txt.textContent = `${Math.ceil(remaining)}s`;
-    if (remaining <= 0) {
-      stopThemeTimer();
-      if (isHost) {
-        toast(`${room.players[pickerId]?.name || 'Jogador'} não escolheu — tema aleatório!`,'err');
-        const available = Object.keys(THEMES_META).filter(k => k !== room.lastTheme);
-        selectTheme(available[Math.floor(Math.random() * available.length)]);
-      }
-    }
-  }, 100);
-}
-
-async function selectTheme(theme) {
-  if (!localRoom || localRoom.state !== 'theme_select') return;
-  stopThemeTimer();
-  const pickerOrder = (localRoom.round - 1) % localRoom.order.length;
-  if (localRoom.order[pickerOrder] !== myId && !isHost) return;
-  const numPlayers = Object.keys(localRoom.players).length;
-  const qs = selectQuestions(theme, numPlayers, localRoom.used || {});
-  await update(roomRef, {
-    state:'question', theme, lastTheme:theme,
-    roundQs: qs, qIdx:0, answers:{}, qEnd: Date.now() + ANSWER_TIME * 1000
-  });
-  speak(`Tema escolhido: ${THEMES_META[theme].name}!`);
-}
-window.selectTheme = selectTheme;
-
-function selectQuestions(theme, count, used) {
-  const pool = QUESTIONS[theme];
-  const available = pool.map((_,i) => i).filter(i => !used[`${theme}_${i}`]);
-  const shuffled = shuffle([...available]);
-  const chosen = shuffled.slice(0, Math.min(count, shuffled.length));
-  if (chosen.length < count) {
-    const reset = pool.map((_,i)=>i).filter(i=>!chosen.includes(i));
-    const extra = shuffle(reset).slice(0, count - chosen.length);
-    return [...chosen, ...extra].map(i => ({cat:theme, idx:i}));
-  }
-  return chosen.map(i => ({cat:theme, idx:i}));
-}
-
-/* ========== QUESTION (com trick badge e timer reduzido após 1ª resposta) ========== */
-function renderQuestion(room) {
-  stopThemeTimer();
-  const qRef = `${room.round}_${room.qIdx}_${room.theme}`;
-  if (questionKey !== qRef) {
-    questionKey = qRef;
-    hasAnswered = false;
-    firstAnswerTime = null;
-    timerShortened = false;
-    showScreen('question');
-    const numPlayers = Object.keys(room.players).length;
-    const meta = THEMES_META[room.theme];
-    document.getElementById('q-theme-badge').innerHTML = `${meta.icon} ${meta.name}`;
-    document.getElementById('q-progress').textContent = `Pergunta ${room.qIdx + 1}/${numPlayers}`;
-    const qData = room.roundQs[room.qIdx];
-    const q = QUESTIONS[qData.cat][qData.idx];
-    // Trick badge
-    const trickBadge = document.getElementById('trick-badge');
-    if (q.trick) trickBadge.classList.remove('hidden');
-    else trickBadge.classList.add('hidden');
-    document.getElementById('q-text').textContent = q.q;
-    const grid = document.getElementById('options-grid');
-    grid.innerHTML = '';
-    ['A','B','C','D'].forEach((letter, i) => {
-      const btn = document.createElement('button');
-      btn.className = 'option-btn';
-      btn.id = `opt-${i}`;
-      btn.innerHTML = `<span class="opt-letter">${letter}</span><span>${esc(q.o[i])}</span>`;
-      btn.onclick = () => submitAnswer(i);
-      grid.appendChild(btn);
-    });
-    updatePlayersStatus(room);
-    startTimer(room.qEnd);
-    speak(q.q);
-    if (isHost) update(roomRef, { [`used/${qData.cat}_${qData.idx}`]: true });
-  } else {
-    updatePlayersStatus(room);
-    // Reduzir timer para 5s após a 1ª resposta
-    if (isHost && !timerShortened) {
-      const answers = room.answers || {};
-      if (Object.keys(answers).length >= 1) {
-        timerShortened = true;
-        const newEnd = Math.min(room.qEnd, Date.now() + 5000);
-        if (newEnd < room.qEnd) {
-          update(roomRef, { qEnd: newEnd });
-          startTimer(newEnd);
-        }
-      }
-    }
-    if (room.answers && room.answers[myId] !== undefined && !hasAnswered) {
-      hasAnswered = true;
-      const myAns = room.answers[myId];
-      document.querySelectorAll('.option-btn').forEach((b,i) => {
-        b.disabled = true;
-        if (i === myAns) b.classList.add('selected');
-      });
-    }
-    if (isHost) checkAutoAdvance(room);
-  }
-}
-
-function updatePlayersStatus(room) {
-  const ps = document.getElementById('players-status');
-  ps.innerHTML = '';
-  Object.entries(room.players || {}).forEach(([id, p]) => {
-    const answered = room.answers && room.answers[id] !== undefined;
-    const div = document.createElement('div');
-    div.className = 'ps-player' + (answered ? ' answered' : '') + (!p.connected ? ' disconnected' : '');
-    div.innerHTML = `<div class="ps-dot"></div><span style="color:${p.color}">${p.emoji}</span><span>${esc(p.name)}</span>`;
-    ps.appendChild(div);
-  });
-}
-
-async function submitAnswer(optIdx) {
-  if (hasAnswered) return;
-  if (!localRoom || localRoom.state !== 'question') return;
-  hasAnswered = true;
-  document.querySelectorAll('.option-btn').forEach((b,i) => {
-    b.disabled = true;
-    if (i === optIdx) b.classList.add('selected');
-  });
-  await update(roomRef, { [`answers/${myId}`]: optIdx });
-  toast('✅ Resposta enviada!','ok');
-}
-window.submitAnswer = submitAnswer;
-
-function checkAutoAdvance(room) {
-  if (!isHost) return;
-  const players = room.players || {};
-  const connected = Object.entries(players).filter(([,p]) => p.connected !== false);
-  const allAnswered = connected.every(([id]) => room.answers && room.answers[id] !== undefined);
-  const timeUp = Date.now() >= (room.qEnd || 0);
-  if ((allAnswered || timeUp) && !pendingAdvance) {
-    pendingAdvance = true;
-    setTimeout(() => { advanceToResult(room); pendingAdvance = false; }, timeUp && !allAnswered ? 500 : 300);
-  }
-}
-
-/* ========== ADVANCE TO RESULT (com streaks e pontos dobrados) ========== */
-async function advanceToResult(room) {
-  if (!isHost || room.state !== 'question') return;
-  const players = room.players || {};
-  const updates = { state: 'question_result' };
-  // Preencher sem resposta com -1
-  Object.keys(players).forEach(id => {
-    if (!room.answers || room.answers[id] === undefined) updates[`answers/${id}`] = -1;
-  });
-  const qData = room.roundQs[room.qIdx];
-  const q = QUESTIONS[qData.cat][qData.idx];
-  const answers = { ...(room.answers || {}) };
-  Object.keys(players).filter(id => answers[id] === undefined).forEach(id => { answers[id] = -1; });
-
-  Object.entries(players).forEach(([id, p]) => {
-    const ans = answers[id];
-    const correct = ans === q.a;
-    const noAnswer = ans === -1;
-    const currentStreak = p.streak || 0;
-    let newStreak, baseDelta;
-
-    if (noAnswer) {
-      newStreak = currentStreak;
-      baseDelta = 0;
-    } else if (correct) {
-      newStreak = currentStreak >= 0 ? currentStreak + 1 : 1;
-      baseDelta = 1;
-    } else {
-      newStreak = currentStreak <= 0 ? currentStreak - 1 : -1;
-      baseDelta = p.score > 0 ? -1 : 0;
-    }
-
-    // Pontos dobrados
-    let finalDelta = baseDelta;
-    if (correct && currentStreak >= 3) finalDelta = 2;
-    if (!correct && !noAnswer && currentStreak <= -3) {
-      finalDelta = p.score >= 2 ? -2 : (p.score > 0 ? -1 : 0);
-    }
-
-    updates[`players/${id}/score`] = Math.max(0, (p.score || 0) + finalDelta);
-    updates[`players/${id}/streak`] = newStreak;
-    updates[`players/${id}/lastDelta`] = finalDelta;
-  });
-  await update(roomRef, updates);
-}
-
-/* ========== QUESTION RESULT ========== */
-function renderQResult(room) {
-  const rKey = `${room.round}_${room.qIdx}`;
-  if (resultKey !== rKey) {
-    resultKey = rKey;
-    stopTimer();
-    showScreen('qresult');
-    const qData = room.roundQs[room.qIdx];
-    const q = QUESTIONS[qData.cat][qData.idx];
-    const myAns = room.answers ? room.answers[myId] : -1;
-    const iCorrect = myAns === q.a;
-    const header = document.getElementById('result-header');
-    header.textContent = iCorrect ? '✅ Correto!' : '❌ Errado!';
-    header.className = 'result-header ' + (iCorrect ? 'correct' : 'wrong');
-    document.getElementById('ca-text').textContent = q.o[q.a];
-    // Grid de respostas com streaks
-    const grid = document.getElementById('player-answers-grid');
-    grid.innerHTML = '';
-    Object.entries(room.players || {}).forEach(([id, p]) => {
-      const ans = room.answers ? room.answers[id] : -1;
-      const correct = ans === q.a;
-      const unanswered = ans === -1;
-      const delta = p.lastDelta !== undefined ? p.lastDelta : 0;
-      const streak = p.streak || 0;
-      let streakHtml = '';
-      if (streak >= 3) streakHtml = `<span class="streak-icon streak-fire">🔥</span>`;
-      else if (streak <= -3) streakHtml = `<span class="streak-icon streak-water">💧</span>`;
-      const row = document.createElement('div');
-      row.className = `pa-row ${correct ? 'p-correct' : 'p-wrong'}`;
-      row.innerHTML = `
-        <div style="width:28px;height:28px;border-radius:50%;background:${p.color}20;color:${p.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">${p.emoji}</div>
-        <div class="pa-name">${esc(p.name)}${streakHtml}</div>
-        <div class="pa-answer">${unanswered ? '⏰ Tempo' : esc(q.o[ans])}</div>
-        <div class="pa-delta ${delta > 0 ? 'pos' : delta < 0 ? 'neg' : 'neutral'}">${delta > 0 ? '+'+delta : delta}</div>`;
-      grid.appendChild(row);
-    });
-    // Info próxima
-    const numPlayers = Object.keys(room.players || {}).length;
-    const isLastQ = room.qIdx + 1 >= numPlayers;
-    const isLastRound = room.round >= TOTAL_ROUNDS;
-    const info = document.getElementById('next-q-info');
-    if (isLastQ && isLastRound) info.textContent = 'Última pergunta! Calculando resultado final...';
-    else if (isLastQ) info.textContent = `Fim da rodada ${room.round}! Placar em breve...`;
-    else info.textContent = 'Próxima pergunta em breve...';
-    if (iCorrect) speak('Correto! Você ganhou pontos!');
-    else speak(`Resposta errada. A correta era: ${q.o[q.a]}`);
-    if (isHost) setTimeout(() => advanceFromResult(room), 4000);
-    setTimeout(() => {
-      document.querySelectorAll('.option-btn').forEach((b,i) => {
-        if (i === q.a) b.classList.add('correct');
-        else if (i === myAns && myAns !== q.a) b.classList.add('wrong');
-      });
-    }, 100);
-  }
-}
-
-async function advanceFromResult(room) {
-  if (!isHost || room.state !== 'question_result') return;
-  const numPlayers = Object.keys(room.players || {}).length;
-  const isLastQ = room.qIdx + 1 >= numPlayers;
-  const isLastRound = room.round >= TOTAL_ROUNDS;
-  if (isLastQ && isLastRound) {
-    await update(roomRef, { state:'game_over' });
-  } else if (isLastQ) {
-    await update(roomRef, { state:'round_summary' });
-  } else {
-    await update(roomRef, { state:'question', qIdx: room.qIdx + 1, answers:{}, qEnd: Date.now() + ANSWER_TIME * 1000 });
-  }
-}
-
-/* ========== ROUND SUMMARY ========== */
-function renderRoundSummary(room) {
-  const key = `rs_${room.round}`;
-  if (rsKey !== key) {
-    rsKey = key;
-    stopTimer();
-    showScreen('round-summary');
-    document.getElementById('round-summary-title').textContent = `FIM DA RODADA ${room.round}`;
-    renderScoreboard(room, 'scoreboard');
-    const btn = document.getElementById('next-round-btn');
-    const isLast = room.round >= TOTAL_ROUNDS;
-    btn.textContent = isLast ? '🏆 Ver Resultado Final' : '▶ Próxima Rodada';
-    btn.disabled = !isHost;
-    if (!isHost) btn.textContent += ' (aguardando host...)';
-    speak(`Fim da rodada ${room.round}! Veja o placar.`);
-  }
-}
-async function advanceFromSummary() {
-  if (!isHost) return;
-  const isLast = localRoom.round >= TOTAL_ROUNDS;
-  if (isLast) {
-    await update(roomRef, { state:'game_over' });
-  } else {
-    const newRound = localRoom.round + 1;
-    await update(roomRef, { state:'theme_select', round:newRound, qIdx:0, answers:{}, roundQs:[], qEnd:0 });
-    themeScreenState = '';
-    speak(`Rodada ${newRound}! Escolha o tema!`);
-  }
-}
-window.advanceFromSummary = advanceFromSummary;
-
-/* ========== FINAL ========== */
-function renderFinal(room) {
-  if (finalDone) return;
-  finalDone = true;
-  stopTimer();
-  showScreen('final');
-  document.getElementById('score-bar').classList.remove('visible');
-  const players = Object.entries(room.players || {}).sort((a,b) => b[1].score - a[1].score);
-  const podium = document.getElementById('podium-wrap');
-  podium.innerHTML = '';
-  [1, 0, 2].forEach(rank => {
-    if (!players[rank]) return;
-    const [id, p] = players[rank];
-    const div = document.createElement('div');
-    div.className = `podium-item rank-${rank + 1}`;
-    div.innerHTML = `
-      <div class="podium-player-name">${esc(p.name)}</div>
-      <div class="podium-avatar" style="background:${p.color}30;color:${p.color}">${p.emoji}</div>
-      <div class="podium-block">${rank === 0 ? '🥇' : rank === 1 ? '🥈' : '🥉'}</div>
-      <div class="podium-score">${p.score} pts</div>`;
-    podium.appendChild(div);
-    div.classList.add('pop');
-  });
-  const ranking = document.getElementById('final-ranking');
-  ranking.innerHTML = '';
-  players.forEach(([id, p], i) => {
-    if (i < 3) return;
-    const row = document.createElement('div');
-    row.className = 'final-row' + (id === myId ? ' me' : '');
-    row.innerHTML = `<div class="final-pos">${i+1}°</div>
-      <div style="width:24px;height:24px;border-radius:50%;background:${p.color}20;color:${p.color};display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0">${p.emoji}</div>
-      <div class="final-pname">${esc(p.name)}</div>
-      <div class="final-pscore">${p.score} pts</div>`;
-    ranking.appendChild(row);
-  });
-  if (players[0]) speak(`Fim de jogo! Vencedor: ${players[0][1].name} com ${players[0][1].score} pontos!`);
-  setTimeout(launchConfetti, 500);
-}
-
-/* ========== PLAY AGAIN (reseta tudo) ========== */
-function playAgain() {
-  finalDone = false;
-  rsKey = ''; resultKey = ''; questionKey = '';
-  themeScreenState = ''; drawDone = false;
-  firstAnswerTime = null; timerShortened = false;
-  showScreen('lobby');
-  document.getElementById('score-bar').classList.remove('visible');
-  if (isHost && roomRef && localRoom) {
-    const resetUpdates = { state:'lobby', round:0, qIdx:0, theme:null, lastTheme:null, roundQs:[], answers:{}, used:{}, order:[] };
-    Object.keys(localRoom.players || {}).forEach(id => {
-      resetUpdates[`players/${id}/score`] = 0;
-      resetUpdates[`players/${id}/streak`] = 0;
-      resetUpdates[`players/${id}/lastDelta`] = 0;
-    });
-    update(roomRef, resetUpdates);
-  }
-}
-window.playAgain = playAgain;
-
-/* ========== SCOREBOARD (com streaks) ========== */
-function renderScoreboard(room, elId) {
-  const el = document.getElementById(elId);
-  el.innerHTML = '';
-  const players = Object.entries(room.players || {}).sort((a,b) => b[1].score - a[1].score);
-  players.forEach(([id, p], i) => {
-    const streak = p.streak || 0;
-    let streakHtml = '';
-    if (streak >= 3) streakHtml = `<span class="streak-icon streak-fire">🔥</span>`;
-    else if (streak <= -3) streakHtml = `<span class="streak-icon streak-water">💧</span>`;
-    const row = document.createElement('div');
-    row.className = `sb-row rank-${i+1}` + (id === myId ? ' me' : '');
-    row.innerHTML = `<div class="sb-rank">${i+1}°</div>
-      <div style="width:32px;height:32px;border-radius:50%;background:${p.color}20;color:${p.color};display:flex;align-items:center;justify-content:center">${p.emoji}</div>
-      <div class="sb-pname">${esc(p.name)}${streakHtml}</div>
-      <div class="sb-pscore">${p.score}</div>`;
-    el.appendChild(row);
-  });
-}
-
-/* ========== SCORE BAR (com streaks) ========== */
-function updateScoreBar(room) {
-  const bar = document.getElementById('score-bar');
-  if (room.state === 'lobby' || room.state === 'drawing') { bar.classList.remove('visible'); return; }
-  bar.classList.add('visible');
-  bar.innerHTML = '';
-  const players = Object.entries(room.players || {}).sort((a,b) => b[1].score - a[1].score);
-  players.forEach(([id, p]) => {
-    const streak = p.streak || 0;
-    let streakHtml = '';
-    if (streak >= 3) streakHtml = `<span class="streak-icon streak-fire">🔥</span><span class="double-pts fire">x2</span>`;
-    else if (streak <= -3) streakHtml = `<span class="streak-icon streak-water">💧</span><span class="double-pts water">x2</span>`;
-    const div = document.createElement('div');
-    div.className = 'sb-player' + (id === myId ? ' me' : '');
-    div.style.borderColor = id === myId ? p.color : 'transparent';
-    div.innerHTML = `<div class="sb-avatar" style="background:${p.color}30;color:${p.color}">${p.emoji}</div><span>${esc(p.name)}</span>${streakHtml}<span class="sb-score">${p.score}</span>`;
-    bar.appendChild(div);
-  });
-}
-
-/* ========== TIMER ========== */
-function startTimer(endTime) {
-  stopTimer();
-  const CIRC = 220;
-  const ring = document.getElementById('timer-ring');
-  const num = document.getElementById('timer-num');
-  if (!ring) return;
-  ring.setAttribute('stroke-dasharray', CIRC);
-  timerInterval = setInterval(() => {
-    const remaining = Math.max(0, (endTime - Date.now()) / 1000);
-    const secs = Math.ceil(remaining);
-    num.textContent = secs;
-    const pct = remaining / ANSWER_TIME;
-    ring.setAttribute('stroke-dashoffset', CIRC * (1 - pct));
-    ring.className.baseVal = 'timer-ring' + (secs <= 5 ? ' urgent' : '');
-    if (remaining <= 0) {
-      stopTimer();
-      if (isHost && localRoom && localRoom.state === 'question') {
-        setTimeout(() => advanceToResult(localRoom), 500);
-      }
-    }
-  }, 100);
-}
-function stopTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
-function stopThemeTimer() { if (themeTimerInterval) { clearInterval(themeTimerInterval); themeTimerInterval = null; } }
-
-/* ========== VOICE ========== */
-function speak(text) {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'pt-BR'; u.rate = 1.05; u.pitch = 1.1;
-  const voices = window.speechSynthesis.getVoices();
-  const ptBR = voices.find(v => v.lang === 'pt-BR') || voices.find(v => v.lang.startsWith('pt'));
-  if (ptBR) u.voice = ptBR;
-  window.speechSynthesis.speak(u);
-}
-
-/* ========== CONFETTI ========== */
-function launchConfetti() {
-  const wrap = document.getElementById('confetti-wrap');
-  wrap.innerHTML = '';
-  const colors = ['#FFD700','#FF4DB8','#00E5FF','#00FF88','#FF3355','#7B2FBE'];
-  for (let i = 0; i < 80; i++) {
-    const c = document.createElement('div');
-    c.className = 'confetti';
-    c.style.cssText = `left:${Math.random()*100}%;background:${colors[i%colors.length]};width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${2+Math.random()*3}s;animation-delay:${Math.random()*2}s`;
-    wrap.appendChild(c);
-  }
-  setTimeout(() => { wrap.innerHTML = ''; }, 6000);
-}
-
-/* ========== UTILS ========== */
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = document.getElementById(`screen-${id}`);
-  if (el) el.classList.add('active');
-}
-let toastTO = null;
-function toast(msg, type='') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'show' + (type ? ` ${type}` : '');
-  if (toastTO) clearTimeout(toastTO);
-  toastTO = setTimeout(() => { el.className = ''; }, 2500);
-}
-function genRoomCode() { return Array.from({length:5},()=>'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random()*26)]).join(''); }
-function genId() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
-function shuffle(a) { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a; }
-function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function buildStars() {
-  const c = document.getElementById('stars');
-  for (let i = 0; i < 120; i++) {
-    const s = document.createElement('div');
-    s.className = 'star';
-    const size = Math.random() * 2.5 + 0.5;
-    s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s`;
-    c.appendChild(s);
-  }
-}
-
-window.speechSynthesis && window.speechSynthesis.getVoices();
-window.speechSynthesis && window.addEventListener('load', () => window.speechSynthesis.getVoices());
-
-document.getElementById('player-name').addEventListener('keydown', e => {
-  if(e.key==='Enter') { const c=document.getElementById('room-code-inp').value.trim(); if(c) joinRoom(); else createRoom(); }
-});
-document.getElementById('room-code-inp').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
-document.getElementById('room-code-inp').addEventListener('keydown', e => { if(e.key==='Enter') joinRoom(); });
-
-init();
-</script>
-</body>
-</html>
 
 /* ========== CONSTANTS ========== */
 const TOTAL_ROUNDS = 12;
