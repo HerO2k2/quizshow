@@ -125,7 +125,7 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
 .lobby-player .p-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;flex-shrink:0}
 .lobby-player .p-name{font-weight:700;font-size:.95rem}
 .lobby-player .p-host{font-size:.7rem;color:var(--gold);background:rgba(255,215,0,.15);padding:1px 7px;border-radius:10px}
-.lobby-slot{border:1.5px dashed rgba(255,255,255,.1);background:rgba(255,255,255,.02);display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:.85rem}
+.lobby-slot{border:1.5px dashed rgba(255,255,255,.1);background:rgba(255,255,255,.02);display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:.85rem;min-height:62px}
 .lobby-status{font-size:.85rem;color:var(--text3);text-align:center}
 .copy-btn{font-size:.8rem;padding:4px 12px;background:rgba(255,215,0,.1);border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--gold);transition:.2s}
 .copy-btn:hover{background:rgba(255,215,0,.2)}
@@ -256,6 +256,39 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
 #screen-loading{gap:16px}
 .spinner{width:50px;height:50px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===================== POWER-UPS ===================== */
+.powerup-float{position:fixed;z-index:80;font-size:2rem;cursor:pointer;
+  animation:puFloat 1s ease-out forwards,puBob 1.5s ease-in-out 1s infinite;
+  filter:drop-shadow(0 0 8px gold);user-select:none;transition:transform .15s}
+.powerup-float:hover{transform:scale(1.3)!important}
+@keyframes puFloat{from{opacity:0;transform:scale(.3) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes puBob{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-8px) rotate(5deg)}}
+.powerup-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;width:100%;margin-top:4px;min-height:28px}
+.pu-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.78rem;font-weight:700;cursor:pointer;border:1.5px solid;transition:all .2s;position:relative}
+.pu-chip:hover{transform:scale(1.08)}
+.pu-chip.star{background:rgba(255,215,0,.15);border-color:rgba(255,215,0,.5);color:var(--gold)}
+.pu-chip.boom{background:rgba(255,77,184,.15);border-color:rgba(255,77,184,.5);color:var(--pink)}
+.pu-chip.ninja{background:rgba(0,229,255,.15);border-color:rgba(0,229,255,.5);color:var(--cyan)}
+.pu-chip.disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+/* Custom question screen */
+#screen-custom-q{gap:14px;padding-top:60px}
+.cq-label{font-size:.75rem;color:var(--text3);font-weight:600;margin-bottom:4px}
+.cq-opt-row{display:flex;gap:8px;align-items:center}
+.cq-opt-letter{width:26px;height:26px;min-width:26px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:var(--text2);flex-shrink:0}
+.cq-correct-btn{padding:4px 10px;border-radius:8px;font-size:.75rem;font-weight:700;border:1.5px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;transition:.2s}
+.cq-correct-btn.selected{background:var(--green);border-color:var(--green);color:#000}
+.cq-timer{font-family:'Orbitron',monospace;font-size:1.4rem;color:var(--gold);text-align:center;font-weight:700}
+/* Steal picker overlay */
+#steal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;align-items:center;justify-content:center;padding:16px}
+.steal-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:20px;max-width:320px;width:100%}
+.steal-title{font-size:1rem;font-weight:700;color:var(--cyan);text-align:center;margin-bottom:12px}
+.steal-player{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r);background:var(--card2);border:1px solid var(--border);cursor:pointer;transition:.2s;margin-bottom:8px}
+.steal-player:hover{border-color:var(--cyan);background:rgba(0,229,255,.08)}
+.steal-player.disabled{opacity:.3;cursor:not-allowed}
+/* Worst player power-up prompt */
+.underdog-banner{width:100%;background:rgba(255,77,184,.1);border:1px solid rgba(255,77,184,.3);border-radius:var(--r);padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:.2s}
+.underdog-banner:hover{background:rgba(255,77,184,.2)}
 
 /* ===================== MISC ===================== */
 .gap-8{gap:8px}.gap-12{gap:12px}.gap-16{gap:16px}.gap-20{gap:20px}
@@ -413,15 +446,61 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
     <button class="btn btn-gold" onclick="playAgain()" style="min-width:200px;margin-top:8px">🔄 Jogar Novamente</button>
   </div>
 
+  <!-- CUSTOM QUESTION (power-up do último) -->
+  <div id="screen-custom-q" class="screen" style="gap:12px;padding-top:60px">
+    <div style="text-align:center">
+      <div style="font-size:.8rem;color:var(--pink);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">💥 Power-Up Ativado!</div>
+      <h2 style="color:var(--gold)">Crie sua Pergunta</h2>
+      <div class="cq-timer" id="cq-timer">60</div>
+    </div>
+    <div style="width:100%">
+      <div class="cq-label">Sua pergunta:</div>
+      <textarea class="inp" id="cq-question" rows="2" placeholder="Digite sua pergunta..." maxlength="200" style="resize:none"></textarea>
+    </div>
+    <div style="width:100%;display:flex;flex-direction:column;gap:8px" id="cq-options-wrap">
+      <div class="cq-label">Opções (marque a correta ✓):</div>
+      <div class="cq-opt-row"><div class="cq-opt-letter">A</div><input class="inp" id="cq-o0" placeholder="Opção A" maxlength="80" style="flex:1"><button class="cq-correct-btn" data-opt="0" onclick="setCQCorrect(0)">✓</button></div>
+      <div class="cq-opt-row"><div class="cq-opt-letter">B</div><input class="inp" id="cq-o1" placeholder="Opção B" maxlength="80" style="flex:1"><button class="cq-correct-btn" data-opt="1" onclick="setCQCorrect(1)">✓</button></div>
+      <div class="cq-opt-row"><div class="cq-opt-letter">C</div><input class="inp" id="cq-o2" placeholder="Opção C" maxlength="80" style="flex:1"><button class="cq-correct-btn" data-opt="2" onclick="setCQCorrect(2)">✓</button></div>
+      <div class="cq-opt-row"><div class="cq-opt-letter">D</div><input class="inp" id="cq-o3" placeholder="Opção D" maxlength="80" style="flex:1"><button class="cq-correct-btn" data-opt="3" onclick="setCQCorrect(3)">✓</button></div>
+    </div>
+    <button class="btn btn-gold" style="width:100%" onclick="submitCustomQuestion()">🚀 Enviar Pergunta</button>
+  </div>
+
+  <!-- CUSTOM QUESTION VOTING (outros jogadores) -->
+  <div id="screen-custom-q-vote" class="screen" style="gap:14px;padding-top:60px">
+    <div style="text-align:center">
+      <div style="font-size:.8rem;color:var(--pink);font-weight:700;margin-bottom:4px">💥 Pergunta Especial!</div>
+      <h2 id="cq-vote-author" style="color:var(--cyan)">??? criou uma pergunta</h2>
+    </div>
+    <div class="q-text" id="cq-vote-question" style="width:100%"></div>
+    <div class="options-grid" id="cq-vote-options"></div>
+    <div style="width:100%;text-align:center;margin-top:4px">
+      <button class="btn btn-outline btn-sm" onclick="skipCustomQuestion()" id="cq-skip-btn">⏭️ Pular Pergunta</button>
+      <div style="font-size:.7rem;color:var(--text3);margin-top:4px" id="cq-skip-count"></div>
+    </div>
+    <div class="players-status" id="cq-players-status"></div>
+  </div>
+
   <div class="confetti-wrap" id="confetti-wrap"></div>
 </div>
 
+<!-- STEAL OVERLAY -->
+<div id="steal-overlay" onclick="document.getElementById('steal-overlay').style.display='none'">
+  <div class="steal-box" onclick="event.stopPropagation()">
+    <div class="steal-title">🥷 Escolha quem roubar</div>
+    <div id="steal-player-list"></div>
+    <button class="btn btn-outline btn-sm" style="width:100%" onclick="document.getElementById('steal-overlay').style.display='none'">Cancelar</button>
+  </div>
+</div>
+
 <!-- EMOJI PICKER -->
-<div id="emoji-picker-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;align-items:center;justify-content:center" onclick="closeEmojiPicker(event)">
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:20px;max-width:340px;width:90%">
-    <div style="font-size:.9rem;color:var(--text2);text-align:center;margin-bottom:12px">Escolha seu avatar</div>
-    <div id="emoji-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px"></div>
-    <button class="btn btn-outline btn-sm" style="width:100%;margin-top:12px" onclick="document.getElementById('emoji-picker-overlay').style.display='none'">Fechar</button>
+<!-- EMOJI PICKER -->
+<div id="emoji-picker-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;align-items:center;justify-content:center;padding:16px" onclick="closeEmojiPicker(event)">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:16px;max-width:360px;width:100%;max-height:80vh;display:flex;flex-direction:column;gap:12px" onclick="event.stopPropagation()">
+    <div style="font-size:.9rem;color:var(--text2);text-align:center;font-weight:700">Escolha seu avatar</div>
+    <div id="emoji-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;overflow-y:auto;max-height:55vh;padding:4px"></div>
+    <button class="btn btn-outline btn-sm" style="width:100%;flex-shrink:0" onclick="document.getElementById('emoji-picker-overlay').style.display='none'">✓ Confirmar</button>
   </div>
 </div>
 
@@ -1038,6 +1117,12 @@ let ANSWER_TIME = 15;
 let THEME_TIME = 20;
 let MAX_PLAYERS = 6;
 let themeKey = '';
+// Power-up globals
+let puInterval = null;        // floating star spawner
+let cqTimer = null;           // custom question countdown
+let myDoubleNext = false;     // ⭐ active for me this question
+let cqCorrectIdx = -1;        // which option creator marked correct
+let activePowerUps = {};      // {id: {star:n, boom:n, ninja:n}} local mirror
 
 /* ========== FIREBASE CONFIG ========== */
 function getConfig() {
@@ -1206,11 +1291,12 @@ async function startGame() {
   const pArr = Object.keys(players);
   if (pArr.length < 2) { toast('Precisa de pelo menos 2 jogadores!','err'); return; }
   const order = shuffle([...pArr]);
-  const resetUpdates = { state:'drawing', order, round:1, qIdx:0, lastTheme:null, used:{} };
+  const resetUpdates = { state:'drawing', order, round:1, qIdx:0, lastTheme:null, used:{}, customQ:null };
   pArr.forEach(id => {
     resetUpdates[`players/${id}/score`] = 0;
     resetUpdates[`players/${id}/streak`] = 0;
     resetUpdates[`players/${id}/lastDelta`] = 0;
+    resetUpdates[`players/${id}/powerUps`] = {star:0,boom:0,ninja:0,boomUsed:false};
   });
   await update(roomRef, resetUpdates);
 }
@@ -1231,6 +1317,7 @@ function handleRoomUpdate(room) {
     isHost = room.host === myId;
   }
   updateScoreBar(room);
+  checkFloatingStar(room);
   switch(room.state) {
     case 'lobby':            renderLobby(room); break;
     case 'drawing':          renderDraw(room); break;
@@ -1239,6 +1326,8 @@ function handleRoomUpdate(room) {
     case 'question_result':  renderQResult(room); break;
     case 'round_summary':    renderRoundSummary(room); break;
     case 'game_over':        renderFinal(room); break;
+    case 'custom_q_create':  renderCustomQCreate(room); break;
+    case 'custom_q_vote':    renderCustomQVote(room); break;
   }
 }
 
@@ -1267,14 +1356,14 @@ function renderLobby(room) {
       ${id === room.host ? '<span class="p-host">HOST</span>' : ''}`;
     grid.appendChild(div);
   });
-  for (let i = pArr.length; i < 6; i++) {
-    const slot = document.createElement('div');
-    slot.className = 'lobby-player lobby-slot';
-    slot.textContent = 'Aguardando...';
-    grid.appendChild(slot);
-  }
   const maxP = room.settings?.maxPlayers || 6;
   grid.style.gridTemplateColumns = maxP > 6 ? 'repeat(3,1fr)' : 'repeat(2,1fr)';
+  for (let i = pArr.length; i < maxP; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'lobby-player lobby-slot';
+    slot.innerHTML = '<span style="opacity:.4;font-size:1.4rem">👤</span>';
+    grid.appendChild(slot);
+  }
   const status = document.getElementById('lobby-status');
   const startBtn = document.getElementById('start-btn');
   if (isHost) {
@@ -1504,9 +1593,13 @@ function renderQuestion(room) {
       grid.appendChild(btn);
     });
     updatePlayersStatus(room);
+    renderPowerUpBar(room);
     startTimer(room.qEnd);
     speak(q.q);
-    if (isHost) update(roomRef, { [`used/${qData.cat}_${qData.idx}`]: true });
+    if (isHost) {
+      update(roomRef, { [`used/${qData.cat}_${qData.idx}`]: true });
+      maybeSpawnFloatingStar();
+    }
   } else {
     updatePlayersStatus(room);
     // Reduzir timer para 5s após a 1ª resposta
@@ -1529,6 +1622,7 @@ function renderQuestion(room) {
         if (i === myAns) b.classList.add('selected');
       });
     }
+    renderPowerUpBar(room);
     if (isHost) checkAutoAdvance(room);
   }
 }
@@ -1584,6 +1678,13 @@ async function advanceToResult(room) {
   const answers = { ...(room.answers || {}) };
   Object.keys(players).filter(id => answers[id] === undefined).forEach(id => { answers[id] = -1; });
 
+  // Check underdog: last place with big gap → grant 💥 power-up
+  const sortedByScore = Object.entries(players).sort((a,b) => a[1].score - b[1].score);
+  const underdogId = sortedByScore.length >= 2 ? sortedByScore[0][0] : null;
+  const underdogScore = sortedByScore.length >= 2 ? sortedByScore[0][1].score : 0;
+  const secondLastScore = sortedByScore.length >= 2 ? sortedByScore[1][1].score : 0;
+  const bigGap = secondLastScore - underdogScore >= 3;
+
   Object.entries(players).forEach(([id, p]) => {
     const ans = answers[id];
     const correct = ans === q.a;
@@ -1592,7 +1693,9 @@ async function advanceToResult(room) {
     let newStreak, baseDelta;
 
     if (noAnswer) {
-      newStreak = currentStreak;
+      // Timeout: breaks positive streak, worsens negative
+      if (currentStreak > 0) newStreak = 0;
+      else newStreak = currentStreak - 1;
       baseDelta = 0;
     } else if (correct) {
       newStreak = currentStreak >= 0 ? currentStreak + 1 : 1;
@@ -1602,16 +1705,39 @@ async function advanceToResult(room) {
       baseDelta = p.score > 0 ? -1 : 0;
     }
 
-    // Pontos dobrados
+    // ⭐ Star power-up: double next correct answer
+    const hasStar = (p.powerUps?.star || 0) > 0;
+    if (hasStar && correct) {
+      baseDelta = 2;
+      updates[`players/${id}/powerUps/star`] = Math.max(0, (p.powerUps?.star||0) - 1);
+    }
+
+    // 🔥 Streak double
     let finalDelta = baseDelta;
-    if (correct && currentStreak >= 3) finalDelta = 2;
-    if (!correct && !noAnswer && currentStreak <= -3) {
+    if (correct && !hasStar && currentStreak >= 3) finalDelta = 2;
+    if (!correct && currentStreak <= -3) {
       finalDelta = p.score >= 2 ? -2 : (p.score > 0 ? -1 : 0);
     }
 
     updates[`players/${id}/score`] = Math.max(0, (p.score || 0) + finalDelta);
     updates[`players/${id}/streak`] = newStreak;
     updates[`players/${id}/lastDelta`] = finalDelta;
+
+    // 💥 Grant custom-question power-up to underdog with big gap
+    if (id === underdogId && bigGap && !(p.powerUps?.boomUsed)) {
+      const currentBoom = p.powerUps?.boom || 0;
+      if (currentBoom === 0) { // only grant if they don't already have one
+        updates[`players/${id}/powerUps/boom`] = 1;
+        updates[`players/${id}/powerUps/boomUsed`] = false;
+      }
+    }
+
+    // 🥷 Grant steal when entering water streak for first time at that level
+    const oldStreak = p.streak || 0;
+    if (newStreak <= -3 && oldStreak > -3) {
+      const currentNinja = p.powerUps?.ninja || 0;
+      updates[`players/${id}/powerUps/ninja`] = currentNinja + 1;
+    }
   });
   await update(roomRef, updates);
 }
@@ -1770,7 +1896,9 @@ function playAgain() {
       resetUpdates[`players/${id}/score`] = 0;
       resetUpdates[`players/${id}/streak`] = 0;
       resetUpdates[`players/${id}/lastDelta`] = 0;
+      resetUpdates[`players/${id}/powerUps`] = {star:0,boom:0,ninja:0,boomUsed:false};
     });
+    resetUpdates['customQ'] = null;
     update(roomRef, resetUpdates);
   }
 }
@@ -1811,7 +1939,12 @@ function updateScoreBar(room) {
     const div = document.createElement('div');
     div.className = 'sb-player' + (id === myId ? ' me' : '');
     div.style.borderColor = id === myId ? p.color : 'transparent';
-    div.innerHTML = `<div class="sb-avatar" style="background:${p.color}30;color:${p.color}">${p.emoji}</div><span>${esc(p.name)}</span>${streakHtml}<span class="sb-score">${p.score}</span>`;
+    const pu = p.powerUps || {};
+    let puHtml = '';
+    if (pu.star > 0) puHtml += `<span title="Dobro na próx. pergunta" style="font-size:.8rem">⭐</span>`;
+    if (pu.boom > 0) puHtml += `<span title="Power-up ativo" style="font-size:.8rem">💥</span>`;
+    if (pu.ninja > 0) puHtml += `<span title="Roubo disponível" style="font-size:.8rem">🥷</span>`;
+    div.innerHTML = `<div class="sb-avatar" style="background:${p.color}30;color:${p.color}">${p.emoji}</div><span>${esc(p.name)}</span>${streakHtml}${puHtml}<span class="sb-score">${p.score}</span>`;
     bar.appendChild(div);
   });
 }
@@ -1896,6 +2029,355 @@ function buildStars() {
     c.appendChild(s);
   }
 }
+
+/* ========== POWER-UP: renderPowerUpBar ========== */
+function renderPowerUpBar(room) {
+  // inject bar into question screen if not present
+  let bar = document.getElementById('pu-bar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'pu-bar';
+    bar.className = 'powerup-bar';
+    const ps = document.getElementById('players-status');
+    ps && ps.parentNode.insertBefore(bar, ps.nextSibling);
+  }
+  bar.innerHTML = '';
+  const me = room.players?.[myId];
+  const pu = me?.powerUps || {};
+
+  // ⭐ Star — double next answer
+  if ((pu.star || 0) > 0) {
+    const chip = document.createElement('div');
+    chip.className = 'pu-chip star';
+    chip.innerHTML = `⭐ x${pu.star} <span style="font-size:.65rem;opacity:.7">Dobro próx.</span>`;
+    chip.title = 'Dobra seus pontos na próxima pergunta que acertar';
+    bar.appendChild(chip);
+  }
+
+  // 💥 Boom — custom question
+  if ((pu.boom || 0) > 0 && !pu.boomUsed) {
+    const chip = document.createElement('div');
+    chip.className = 'pu-chip boom';
+    chip.innerHTML = `💥 Criar Pergunta`;
+    chip.title = 'Crie uma pergunta e ganhe pontos por cada erro dos outros';
+    chip.onclick = () => activateBoom();
+    bar.appendChild(chip);
+  }
+
+  // 🥷 Ninja — steal points
+  if ((pu.ninja || 0) > 0) {
+    const chip = document.createElement('div');
+    chip.className = 'pu-chip ninja';
+    chip.innerHTML = `🥷 x${pu.ninja} Roubar`;
+    chip.title = 'Roube 2 pontos de outro jogador';
+    chip.onclick = () => openStealOverlay(room);
+    bar.appendChild(chip);
+  }
+}
+
+/* ========== POWER-UP: ⭐ Floating Star ========== */
+function maybeSpawnFloatingStar() {
+  // Random chance ~15% per question, after a short delay
+  if (Math.random() > 0.15) return;
+  const delay = 3000 + Math.random() * 8000; // 3–11s into question
+  setTimeout(() => {
+    if (!localRoom || localRoom.state !== 'question') return;
+    // Broadcast via Firebase so all see it
+    update(roomRef, { floatingStar: { ts: Date.now(), id: Math.random().toString(36).slice(2) } });
+  }, delay);
+}
+
+let lastStarId = '';
+function checkFloatingStar(room) {
+  const fs = room.floatingStar;
+  if (!fs || fs.id === lastStarId) return;
+  lastStarId = fs.id;
+  // Only show if question is active and I haven't answered yet (creates urgency)
+  if (room.state !== 'question') return;
+  spawnFloatingStarUI(fs.id);
+}
+
+function spawnFloatingStarUI(starId) {
+  const existing = document.getElementById('pu-float-' + starId);
+  if (existing) return;
+  const el = document.createElement('div');
+  el.id = 'pu-float-' + starId;
+  el.className = 'powerup-float';
+  el.textContent = '⭐';
+  el.style.left = (10 + Math.random() * 75) + '%';
+  el.style.top = (15 + Math.random() * 55) + '%';
+  el.title = 'Clique rápido! ⭐ Dobro de pontos!';
+  document.body.appendChild(el);
+  el.onclick = () => collectStar(starId, el);
+  // Auto-remove after 6s
+  setTimeout(() => el.remove(), 6500);
+}
+
+async function collectStar(starId, el) {
+  if (!roomRef || !localRoom || localRoom.state !== 'question') return;
+  el.style.animation = 'none';
+  el.style.transform = 'scale(2)';
+  el.style.opacity = '0';
+  setTimeout(() => el.remove(), 400);
+  const me = localRoom.players?.[myId];
+  const cur = me?.powerUps?.star || 0;
+  await update(ref(db, `rooms/${roomId}/players/${myId}/powerUps`), { star: cur + 1 });
+  // Remove floating star from room so others can't grab it
+  await update(roomRef, { floatingStar: null });
+  toast('⭐ Power-up coletado! Dobro na próxima!', 'ok');
+}
+
+/* ========== POWER-UP: 💥 Custom Question ========== */
+async function activateBoom() {
+  if (!localRoom || !roomRef) return;
+  const me = localRoom.players?.[myId];
+  if (!me?.powerUps?.boom) return;
+  // Set state to custom_q_create, mark creator
+  await update(roomRef, {
+    state: 'custom_q_create',
+    customQ: { creatorId: myId, question:'', options:['','','',''], correct:-1, answers:{}, skips:[], active:true }
+  });
+}
+
+let cqTimerInterval = null;
+function renderCustomQCreate(room) {
+  if (room.customQ?.creatorId !== myId) {
+    // Others wait — show a waiting screen
+    showScreen('custom-q-vote');
+    document.getElementById('cq-vote-author').textContent = `${esc(room.players?.[room.customQ?.creatorId]?.name || '???')} está criando uma pergunta...`;
+    document.getElementById('cq-vote-question').textContent = '⏳ Aguarde...';
+    document.getElementById('cq-vote-options').innerHTML = '';
+    document.getElementById('cq-players-status').innerHTML = '';
+    return;
+  }
+  showScreen('custom-q');
+  if (cqTimerInterval) return; // already running
+  let t = 60;
+  document.getElementById('cq-timer').textContent = t;
+  cqTimerInterval = setInterval(() => {
+    t--;
+    const el = document.getElementById('cq-timer');
+    if (el) el.textContent = t;
+    if (t <= 0) {
+      clearInterval(cqTimerInterval); cqTimerInterval = null;
+      submitCustomQuestion();
+    }
+  }, 1000);
+}
+
+let cqCorrectIdxLocal = -1;
+window.setCQCorrect = function(idx) {
+  cqCorrectIdxLocal = idx;
+  document.querySelectorAll('.cq-correct-btn').forEach((b,i) => {
+    b.classList.toggle('selected', i === idx);
+  });
+};
+
+window.submitCustomQuestion = async function() {
+  if (cqTimerInterval) { clearInterval(cqTimerInterval); cqTimerInterval = null; }
+  const q = document.getElementById('cq-question')?.value.trim() || '';
+  const opts = [0,1,2,3].map(i => document.getElementById(`cq-o${i}`)?.value.trim() || '');
+  if (!q || opts.some(o => !o) || cqCorrectIdxLocal < 0) {
+    toast('Preencha a pergunta, todas as opções e marque a correta!','err'); return;
+  }
+  cqCorrectIdxLocal = -1;
+  document.querySelectorAll('.cq-correct-btn').forEach(b => b.classList.remove('selected'));
+  const correctIdx = document.querySelector('.cq-correct-btn.selected') ? -1 :
+    [...document.querySelectorAll('.cq-correct-btn')].findIndex(b => b.classList.contains('selected'));
+  // Re-read correct from local var set by setCQCorrect
+  const ci = [...document.querySelectorAll('.cq-correct-btn')].findIndex(b => b.classList.contains('selected'));
+  if (ci < 0) { toast('Marque a opção correta!','err'); return; }
+  await update(roomRef, {
+    state: 'custom_q_vote',
+    'customQ/question': q,
+    'customQ/options': opts,
+    'customQ/correct': ci,
+    'customQ/answers': {},
+    'customQ/skips': [],
+    [`players/${myId}/powerUps/boomUsed`]: true,
+    [`players/${myId}/powerUps/boom`]: 0,
+    'customQ/qEnd': Date.now() + 30000
+  });
+};
+
+let cqVoteKey = '';
+function renderCustomQVote(room) {
+  const cq = room.customQ;
+  if (!cq || !cq.active) return;
+  const vKey = cq.question;
+  if (cqVoteKey === vKey && room.customQ?.creatorId !== myId) {
+    // Update skip count
+    const skips = cq.skips || [];
+    const totalVoters = Object.keys(room.players||{}).length - 1;
+    document.getElementById('cq-skip-count').textContent = `${skips.length}/${totalVoters} querem pular`;
+    // Update player status
+    renderCQPlayersStatus(room);
+    // Host check: all answered or time up → resolve
+    if (isHost) checkCQAutoAdvance(room);
+    return;
+  }
+  cqVoteKey = vKey;
+  showScreen('custom-q-vote');
+  const creator = room.players?.[cq.creatorId];
+  document.getElementById('cq-vote-author').textContent = `💥 ${esc(creator?.name || '???')} criou uma pergunta!`;
+  document.getElementById('cq-vote-question').textContent = cq.question || '...';
+  const optGrid = document.getElementById('cq-vote-options');
+  optGrid.innerHTML = '';
+  if (cq.options && cq.options.length) {
+    cq.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerHTML = `<span class="opt-letter">${['A','B','C','D'][i]}</span><span>${esc(opt)}</span>`;
+      if (myId === cq.creatorId) { btn.disabled = true; }
+      else btn.onclick = () => submitCQAnswer(i);
+      optGrid.appendChild(btn);
+    });
+  }
+  const skipBtn = document.getElementById('cq-skip-btn');
+  skipBtn.style.display = myId === cq.creatorId ? 'none' : 'inline-flex';
+  renderCQPlayersStatus(room);
+  if (isHost) {
+    // Start local timer display
+    startCQTimer(room);
+    checkCQAutoAdvance(room);
+  }
+}
+
+function renderCQPlayersStatus(room) {
+  const cq = room.customQ || {};
+  const ps = document.getElementById('cq-players-status');
+  if (!ps) return;
+  ps.innerHTML = '';
+  Object.entries(room.players||{}).forEach(([id, p]) => {
+    if (id === cq.creatorId) return;
+    const answered = cq.answers && cq.answers[id] !== undefined;
+    const div = document.createElement('div');
+    div.className = 'ps-player' + (answered ? ' answered' : '');
+    div.innerHTML = `<div class="ps-dot"></div><span style="color:${p.color}">${p.emoji}</span><span>${esc(p.name)}</span>`;
+    ps.appendChild(div);
+  });
+}
+
+let cqAnswered = false;
+async function submitCQAnswer(optIdx) {
+  if (cqAnswered || myId === localRoom?.customQ?.creatorId) return;
+  cqAnswered = true;
+  document.querySelectorAll('#cq-vote-options .option-btn').forEach((b,i) => {
+    b.disabled = true;
+    if (i === optIdx) b.classList.add('selected');
+  });
+  await update(roomRef, { [`customQ/answers/${myId}`]: optIdx });
+}
+
+window.skipCustomQuestion = async function() {
+  if (!roomRef || myId === localRoom?.customQ?.creatorId) return;
+  const skips = localRoom?.customQ?.skips || [];
+  if (skips.includes(myId)) return;
+  await update(roomRef, { 'customQ/skips': [...skips, myId] });
+  toast('Voto de pular registrado','ok');
+};
+
+function startCQTimer(room) { /* timer already in qEnd field, host resolves */ }
+
+function checkCQAutoAdvance(room) {
+  if (!isHost) return;
+  const cq = room.customQ || {};
+  const players = room.players || {};
+  const voters = Object.keys(players).filter(id => id !== cq.creatorId);
+  const answered = voters.filter(id => cq.answers && cq.answers[id] !== undefined);
+  const skips = cq.skips || [];
+  const skipMajority = skips.length >= Math.ceil(voters.length / 2);
+  const allDone = answered.length >= voters.length;
+  const timeUp = Date.now() >= (cq.qEnd || 0);
+  if ((allDone || timeUp || skipMajority) && !pendingAdvance) {
+    pendingAdvance = true;
+    setTimeout(() => { resolveCustomQ(room); pendingAdvance = false; }, 500);
+  }
+}
+
+async function resolveCustomQ(room) {
+  if (!isHost || room.state !== 'custom_q_vote') return;
+  const cq = room.customQ || {};
+  const players = room.players || {};
+  const creator = players[cq.creatorId];
+  const updates = { state: 'question', 'customQ/active': false };
+  const skips = cq.skips || [];
+  const voters = Object.keys(players).filter(id => id !== cq.creatorId);
+  const skipMajority = skips.length >= Math.ceil(voters.length / 2);
+
+  if (skipMajority) {
+    // Question skipped — creator gets nothing, no one loses points
+    toast('Pergunta pulada pela maioria!','err');
+    await update(roomRef, { ...updates,
+      state: 'question',
+      qIdx: room.qIdx,
+      answers: {},
+      qEnd: Date.now() + ANSWER_TIME * 1000
+    });
+    return;
+  }
+
+  let creatorBonus = 0;
+  voters.forEach(id => {
+    const ans = cq.answers?.[id];
+    if (ans === undefined || ans === -1) return; // no answer
+    const correct = ans === cq.correct;
+    if (!correct) {
+      creatorBonus++;
+      // voter loses a point (same as normal wrong)
+      const p = players[id];
+      if (p && p.score > 0) updates[`players/${id}/score`] = Math.max(0, p.score - 1);
+    } else {
+      // voter got it right — gains 1 point
+      const p = players[id];
+      if (p) updates[`players/${id}/score`] = (p.score || 0) + 1;
+    }
+  });
+  // Creator gains creatorBonus (min 1)
+  const creatorScore = (creator?.score || 0) + Math.max(1, creatorBonus);
+  updates[`players/${cq.creatorId}/score`] = creatorScore;
+  updates.state = 'question';
+  updates.answers = {};
+  updates.qEnd = Date.now() + ANSWER_TIME * 1000;
+  cqVoteKey = '';
+  cqAnswered = false;
+  await update(roomRef, updates);
+}
+
+/* ========== POWER-UP: 🥷 Steal ========== */
+function openStealOverlay(room) {
+  const me = room.players?.[myId];
+  if (!me?.powerUps?.ninja) return;
+  const overlay = document.getElementById('steal-overlay');
+  const list = document.getElementById('steal-player-list');
+  list.innerHTML = '';
+  Object.entries(room.players||{}).forEach(([id, p]) => {
+    if (id === myId) return;
+    const canSteal = (p.score || 0) > 0;
+    const div = document.createElement('div');
+    div.className = 'steal-player' + (canSteal ? '' : ' disabled');
+    div.innerHTML = `<div style="font-size:1.4rem">${p.emoji}</div><div style="flex:1"><div style="font-weight:700">${esc(p.name)}</div><div style="font-size:.75rem;color:var(--text3)">${p.score} pts</div></div>`;
+    if (canSteal) div.onclick = () => executeSteal(id, p, overlay);
+    list.appendChild(div);
+  });
+  overlay.style.display = 'flex';
+}
+
+async function executeSteal(targetId, targetPlayer, overlay) {
+  overlay.style.display = 'none';
+  const me = localRoom?.players?.[myId];
+  if (!me || !roomRef) return;
+  const steal = Math.min(2, targetPlayer.score || 0);
+  await update(roomRef, {
+    [`players/${targetId}/score`]: Math.max(0, (targetPlayer.score||0) - steal),
+    [`players/${myId}/score`]: (me.score||0) + steal,
+    [`players/${myId}/powerUps/ninja`]: Math.max(0, (me.powerUps?.ninja||0) - 1)
+  });
+  toast(`🥷 Roubou ${steal} ponto${steal>1?'s':''} de ${esc(targetPlayer.name)}!`,'ok');
+}
+
+/* ========== FLOATING STAR CHECK in handleRoomUpdate ========== */
+// Patched into handleRoomUpdate via checkFloatingStar call
 
 window.speechSynthesis && window.speechSynthesis.getVoices();
 window.speechSynthesis && window.addEventListener('load', () => window.speechSynthesis.getVoices());
