@@ -320,7 +320,7 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
   <!-- SETUP -->
   <div id="screen-setup" class="screen" style="max-width:600px;gap:14px">
     <h1><span class="gold">🎯</span> QuizShow<br><span class="gold">Brasil</span></h1>
-    <p class="subtitle">Configure o Firebase para jogar em multiplayer</p>
+    <p class="subtitle">Necessário apenas para <strong style="color:var(--gold)">criar salas</strong><br><span style="font-size:.8rem;color:var(--text3)">Quem entra em salas recebe o link de convite</span></p>
     <div class="card card-glow" style="width:100%">
       <h3 style="margin-bottom:12px;color:var(--gold)">⚙️ Configuração Rápida (gratuito)</h3>
       <ol class="setup-steps">
@@ -357,8 +357,11 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
         </div>
       </div>
     </div>
-    <p class="text-xs" style="color:var(--text3);text-align:center">2-6 jogadores • 12 rodadas • 12 categorias</p>
-    <button class="btn btn-outline btn-sm" onclick="showSetup()">⚙️ Configurar Firebase</button>
+    <p class="text-xs" style="color:var(--text3);text-align:center">2-12 jogadores • 12 categorias</p>
+    <p class="text-xs" style="color:var(--text3);text-align:center;margin-top:4px">
+      👥 Para entrar em uma sala, use o <strong style="color:var(--cyan)">link de convite</strong> enviado pelo criador
+    </p>
+    <button class="btn btn-outline btn-sm" onclick="showSetup()" id="setup-btn">⚙️ Criar Nova Sala (requer config)</button>
   </div>
 
   <!-- LOBBY -->
@@ -498,7 +501,29 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
   </div>
 </div>
 
+<!-- GUEST QUICK SETUP (just databaseURL) -->
+<div id="guest-setup-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:400;align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:24px;max-width:380px;width:100%;display:flex;flex-direction:column;gap:14px">
+    <h2 style="color:var(--gold);text-align:center;font-size:1.1rem">🔗 Conectar ao Jogo</h2>
+    <p style="font-size:.85rem;color:var(--text2);text-align:center">Peça o <strong style="color:var(--cyan)">link de convite</strong> para quem criou a sala.<br>Ou cole o <strong>databaseURL</strong> do Firebase abaixo:</p>
+    <input class="inp" id="guest-db-url" placeholder="https://seu-projeto.firebaseio.com" autocomplete="off">
+    <button class="btn btn-gold" onclick="connectAsGuest()">▶ Conectar e Entrar</button>
+    <button class="btn btn-outline btn-sm" onclick="document.getElementById('guest-setup-overlay').style.display='none'">Cancelar</button>
+  </div>
+</div>
+
 <!-- EMOJI PICKER -->
+<!-- GUEST QUICK SETUP (just databaseURL) -->
+<div id="guest-setup-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:400;align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:24px;max-width:380px;width:100%;display:flex;flex-direction:column;gap:14px">
+    <h2 style="color:var(--gold);text-align:center;font-size:1.1rem">🔗 Conectar ao Jogo</h2>
+    <p style="font-size:.85rem;color:var(--text2);text-align:center">Peça o <strong style="color:var(--cyan)">link de convite</strong> para quem criou a sala.<br>Ou cole o <strong>databaseURL</strong> do Firebase abaixo:</p>
+    <input class="inp" id="guest-db-url" placeholder="https://seu-projeto.firebaseio.com" autocomplete="off">
+    <button class="btn btn-gold" onclick="connectAsGuest()">▶ Conectar e Entrar</button>
+    <button class="btn btn-outline btn-sm" onclick="document.getElementById('guest-setup-overlay').style.display='none'">Cancelar</button>
+  </div>
+</div>
+
 <!-- EMOJI PICKER -->
 <div id="emoji-picker-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;align-items:center;justify-content:center;padding:16px" onclick="closeEmojiPicker(event)">
   <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:16px;max-width:360px;width:100%;max-height:80vh;display:flex;flex-direction:column;gap:12px" onclick="event.stopPropagation()">
@@ -547,30 +572,10 @@ const QUESTIONS = {
     {q:"Qual é o animal mais perigoso do Brasil em mortes humanas?",o:["Onça-pintada","Cascavel","Abelha africanizada","Capivara"],a:2},
     {q:"O que é a Festa de Parintins?",o:["Carnaval do Nordeste","Festival folclórico do Amazonas","Festa junina do Sul","Carnaval indígena"],a:1},
     {q:"Qual é o maior carnaval do mundo em público?",o:["Veneza","Rio de Janeiro","Salvador","Recife"],a:1},
-    {q:"Qual estado brasileiro tem o maior número de municípios?",o:["São Paulo","Minas Gerais","Bahia","Rio Grande do Sul"],a:1},
-    {q:"O Brasil tem fronteira com quantos países sul-americanos?",o:["8","9","10","11"],a:2},
-    {q:"Qual é a universidade mais antiga do Brasil?",o:["USP","UFRJ","UFBA","Universidade Federal de Ouro Preto"],a:2},
-    {q:"Em que estado fica o Pico da Neblina, ponto mais alto do Brasil?",o:["Pará","Roraima","Amazonas","Mato Grosso"],a:2},
-    {q:"Qual cidade brasileira tem o maior PIB per capita?",o:["São Paulo","Brasília","Porto Alegre","Itajaí (SC)"],a:3},
-    {q:"O Pantanal é o maior de quê no mundo?",o:["Floresta tropical","Savana","Planície alagável","Delta de rio"],a:2},
-    {q:"Qual presidente brasileiro governou por mais tempo no total?",o:["Getúlio Vargas","Lula","FHC","Dom Pedro II"],a:3},
-    {q:"A frase 'Independência ou Morte' foi documentada por quem primeiro?",o:["Dom Pedro I","Princesa Isabel","Padre Belchior","Um secretário real"],a:3},
-{q:"Qual estado brasileiro NÃO existia antes de 1988?",o:["Acre","Rondônia","Tocantins","Amapá"],a:2},
-{q:"Em que ano o Brasil sediou a Copa do Mundo pela primeira vez?",o:["1938","1942","1950","1954"],a:2},
-{q:"Qual é o nome oficial completo do Brasil?",o:["Brasil","República do Brasil","República Federativa do Brasil","Estados Unidos do Brasil"],a:2},
-{q:"Qual é o rio mais extenso inteiramente dentro do Brasil?",o:["São Francisco","Paraná","Tocantins","Madeira"],a:0},
-{q:"A Operação Lava Jato foi iniciada em qual cidade?",o:["São Paulo","Rio de Janeiro","Curitiba","Brasília"],a:2},
-{q:"Qual é o único estado brasileiro sem litoral que faz fronteira com outro país?",o:["Mato Grosso","Goiás","Minas Gerais","Mato Grosso do Sul"],a:3},
-{q:"Quantas línguas indígenas são faladas no Brasil atualmente (aproximado)?",o:["50","100","180","300"],a:3},
-{q:"Qual foi a primeira capital do Brasil antes de Salvador?",o:["Não havia — Salvador foi a primeira","Porto Seguro","Recife","São Paulo"],a:0,trick:true},
-{q:"O que é o 'sistema S' no Brasil?",o:["Sistema de saúde público","Conjunto de entidades como SENAI, SESC, SEBRAE","Sistema eleitoral","Rede de segurança social"],a:1},
-{q:"Qual é o estado com maior índice de desmatamento histórico?",o:["Pará","Mato Grosso","Rondônia","Amazonas"],a:1},
-{q:"Em que ano o Brasil adotou o Real como moeda?",o:["1991","1993","1994","1995"],a:2},
-{q:"Qual escritora brasileira ganhou o Prêmio Camões, considerado o Nobel lusófono?",o:["Clarice Lispector","Rachel de Queiroz","Lygia Fagundes Telles","Conceição Evaristo"],a:1},
   ],
   esportes: [
-    {q:"Qual desses jogadores NUNCA ganhou uma Copa do Mundo FIFA?",o:["Giroud","Messi","Cristiano Ronaldo","Romário"],a:2,trick:true},
-    {q:"Quantas Copas o Brasil ganhou SEGUIDAS entre 1958 e 1970?",o:["Duas","Três","Quatro","Nenhuma seguida"],a:0,trick:true},
+    {q:"Qual desses jogadores NUNCA ganhou uma Copa do Mundo FIFA?",o:["Pelé","Messi (2022)","Cristiano Ronaldo","Romário"],a:2,trick:true},
+    {q:"Quantas Copas o Brasil ganhou SEGUIDAS entre 1958 e 1970?",o:["Duas","Três","Quatro","Nenhuma seguida"],a:1,trick:true},
     {q:"Qual time NÃO é da cidade de São Paulo?",o:["Corinthians","Palmeiras","Santos","São Paulo FC"],a:2,trick:true},
     {q:"Ayrton Senna morreu em qual corrida?",o:["GP da Itália","GP de Mônaco","GP de San Marino","GP do Brasil"],a:2,trick:true},
     {q:"Michael Jordan jogou em qual posição?",o:["Point Guard","Small Forward","Shooting Guard","Power Forward"],a:2,trick:true},
@@ -578,7 +583,7 @@ const QUESTIONS = {
     {q:"Quantas Copas do Mundo o Brasil ganhou?",o:["3","4","5","6"],a:2},
     {q:"Em que ano o Brasil ganhou sua primeira Copa?",o:["1950","1954","1958","1962"],a:2},
     {q:"Quem é conhecido como 'O Rei do Futebol'?",o:["Ronaldo","Pelé","Neymar","Zico"],a:1},
-    {q:"Qual piloto brasileiro ganhou a F1 três vezes?",o:["Max Verstappen","Ayrton Senna","Felipe Massa","Rubens Barrichello"],a:1},
+    {q:"Qual piloto brasileiro ganhou a F1 três vezes?",o:["Nelson Piquet","Ayrton Senna","Felipe Massa","Rubens Barrichello"],a:1},
     {q:"Qual é o maior estádio do Brasil?",o:["Mineirão","Maracanã","Morumbi","Arena Corinthians"],a:1},
     {q:"Qual time brasileiro é chamado de 'Mengão'?",o:["Corinthians","Flamengo","Vasco","Botafogo"],a:1},
     {q:"Em qual esporte Daiane dos Santos foi campeã mundial?",o:["Atletismo","Ginástica artística","Natação","Judô"],a:1},
@@ -586,40 +591,19 @@ const QUESTIONS = {
     {q:"Em que país surgiu o Rugby?",o:["Austrália","EUA","Inglaterra","Irlanda"],a:2},
     {q:"Quem foi o artilheiro da Copa de 2022?",o:["Mbappé","Neymar","Messi","Benzema"],a:0},
     {q:"Qual seleção ganhou mais Copas do Mundo?",o:["Alemanha","Itália","Brasil","Argentina"],a:2},
-    {q:"Em que esporte se usa o termo 'smash'?",o:["Futebol","Natação","Tênis","Basquete"],a:2},
+    {q:"Em que esporte se usa o termo 'smash'?",o:["Futebol","Natação","Tênis/Badminton","Basquete"],a:2},
     {q:"Qual é o tamanho oficial de uma piscina olímpica?",o:["25m","50m","75m","100m"],a:1},
-    {q:"Quem tem mais títulos da Champions League?",o:["Barcelona","Bayern Munich","Real Madrid","Milan"],a:2},
+    {q:"Quem tem mais títulos da Champions League?",o:["Barcelona","Bayern Munich","Real Madrid","Juventus"],a:2},
     {q:"Em que ano o Brasil sediou as Olimpíadas?",o:["2012","2014","2016","2020"],a:2},
     {q:"Qual é o apelido de Ronaldo Nazário?",o:["Galáctico","O Fenômeno","O Rei","Gaúcho"],a:1},
-    {q:"Qual país inventou o Basquete?",o:["EUA","Canadá","Austrália","Inglaterra"],a:0},
+    {q:"Qual país inventou o Basquete?",o:["EUA","Canadá","Brasil","Inglaterra"],a:1},
     {q:"Quantos jogadores compõem uma equipe de basquete em quadra?",o:["4","5","6","7"],a:1},
     {q:"Qual é o apelido do Atlético Mineiro?",o:["Raposa","Galo","Coelho","Leão"],a:1},
-    {q:"Qual atleta brasileiro tem mais ouros olímpicos?",o:["Gustavo Borges","Neymar","Isaquias Queiroz","Robert Scheidt"],a:3},
-    {q:"Qual é o apelido atual de Neymar Jr.?",o:["Nego Ney","NJR","Juninho","O Menino Ney"],a:1},
-    {q:"Qual desses NÃO é um golpe do judô?",o:["Uchi-mata","Waza-ari","Dollyo-chagi","Osoto-gari"],a:3},
+    {q:"Qual atleta brasileiro tem mais ouros olímpicos?",o:["Gustavo Borges","Fofão","Isaquias Queiroz","Robert Scheidt"],a:3},
+    {q:"Qual é o apelido de Neymar Jr.?",o:["Ney","NJR","Juninho","O Menino Ney"],a:1},
+    {q:"Qual desses NÃO é um golpe do judô?",o:["Ippon","Waza-ari","Shido","Kawaza"],a:3},
     {q:"Em quantos países o futebol é o esporte mais popular?",o:["Menos de 50","Entre 50 e 100","Mais de 100","Em todos"],a:2},
     {q:"Qual time é chamado de 'Timão'?",o:["Flamengo","São Paulo","Corinthians","Grêmio"],a:2},
-    {q:"Qual time é chamado de 'Macaca'?",o:["Vasco","Operário","Ponte Preta","Sport"],a:2},
-    {q:"Qual foi o único país a disputar todas as edições da Copa do Mundo?",o:["Alemanha","Brasil","Itália","Argentina"],a:1},
-{q:"Quantos gols Pelé marcou em Copas do Mundo?",o:["10","12","15","17"],a:1},
-{q:"Qual atleta ganhou mais medalhas olímpicas na história?",o:["Usain Bolt","Michael Phelps","Carl Lewis","Larisa Latynina"],a:1},
-{q:"Em que ano a seleção brasileira feminina de vôlei ganhou seu primeiro ouro olímpico?",o:["1996","2004","2008","2012"],a:1},
-{q:"Qual país sediou a Copa do Mundo de 1978?",o:["Brasil","Chile","Argentina","Uruguai"],a:2},
-{q:"Quem marcou o último gol que eliminou o Brasil na Copa de 1998 (semifinal)?",o:["Zinédine Zidane","Emmanuel Petit","Didier Deschamps","Lilian Thuram"],a:1},
-{q:"Qual é a edição com mais gols marcados na Copa do Mundo?",o:["171 (1998)","141 (1954)","161 (1970)","172 (2022)"],a:3},
-{q:"No tênis, qual Grand Slam é jogado em quadra de saibro?",o:["Wimbledon","US Open","Roland Garros","Australian Open"],a:2},
-{q:"Qual boxeador é chamado de 'The Greatest'?",o:["Mike Tyson","Joe Frazier","Muhammad Ali","Floyd Mayweather"],a:2},
-{q:"Qual o recordista de gols em uma única Copa do Mundo?",o:["Ronaldo Nazário","Just Fontaine","Gerd Müller ","Miroslav Klose"],a:1,trick:true},
-{q:"Qual seleção perdeu três finais consecutivas de Copa do Mundo?",o:["Holanda","Hungria","Tchecoslováquia","Alemanha"],a:0},
-{q:"Em qual ano o Brasil levou 7x1 da Alemanha?",o:["2010","2012","2014","2016"],a:2},
-{q:"Quem foi o maior artilheiro da história das Copas do Mundo até 2022?",o:["Ronaldo Nazário","Miroslav Klose","Gerd Müller","Pelé"],a:1},
-{q:"Qual esporte tem mais federados no mundo?",o:["Futebol","Tênis de mesa","Badminton","Xadrez"],a:1,trick:true},
-{q:"No beisebol, quantos strikes eliminam o batedor?",o:["2","3","4","5"],a:1},
-{q:"Qual é o troféu mais antigo do esporte profissional?",o:["Copa do Mundo FIFA","Copa Stanley","Ryder Cup","Copa América"],a:1},
-{q:"Quem ganhou o primeiro Grand Slam do tênis (todos os 4 torneios no mesmo ano)?",o:["Roger Federer","Pete Sampras","Don Budge","Rod Laver"],a:2},
-{q:"Qual país ganhou mais medalhas de ouro na história das Olimpíadas?",o:["Rússia/URSS","China","Grã-Bretanha","EUA"],a:3},
-{q:"No xadrez, qual peça pode pular outras peças?",o:["Bispo","Torre","Rainha","Cavalo"],a:3},
-{q:"Qual foi o primeiro brasileiro a vencer o Campeonato Brasileiro de Fórmula 1?",o:["Emerson Fittipaldi","Nelson Piquet","Ayrton Senna","Rubens Barrichello"],a:0},
   ],
   ciencias: [
     {q:"Qual desses NÃO é um planeta do Sistema Solar?",o:["Netuno","Saturno","Plutão","Urano"],a:2,trick:true},
@@ -629,7 +613,7 @@ const QUESTIONS = {
     {q:"O DNA humano é composto por quantas bases nitrogenadas?",o:["2","3","4","5"],a:2,trick:true},
     {q:"Qual dos sentidos humanos se recupera mais lentamente?",o:["Visão","Audição","Olfato","Tato"],a:2,trick:true},
     {q:"Qual é o elemento mais abundante no universo?",o:["Oxigênio","Carbono","Hidrogênio","Hélio"],a:2},
-    {q:"Quantos planetas tem o nosso Sistema Solar?",o:["7","8","9","10"],a:1},
+    {q:"Quantos planetas tem o Sistema Solar?",o:["7","8","9","10"],a:1},
     {q:"Qual é a velocidade da luz (aprox.)?",o:["100.000 km/s","300.000 km/s","500.000 km/s","1.000.000 km/s"],a:1},
     {q:"Quem descobriu a penicilina?",o:["Louis Pasteur","Alexander Fleming","Marie Curie","Isaac Newton"],a:1},
     {q:"Qual é a fórmula química da água?",o:["H3O","H2O","HO2","H2O2"],a:1},
@@ -639,8 +623,8 @@ const QUESTIONS = {
     {q:"Qual é o símbolo químico do ouro?",o:["Au","Go","Or","Ag"],a:0},
     {q:"Quanto tempo a luz do Sol leva para chegar à Terra?",o:["1 min","8 min","30 min","1 hora"],a:1},
     {q:"Qual é o animal terrestre mais veloz do mundo?",o:["Leão","Tigre","Guepardo","Cavalo"],a:2},
-    {q:"Quantos ossos tem o corpo humano adulto?",o:["206","246","216","226"],a:0},
-    {q:"Qual é o maior órgão do corpo humano?",o:["Intestino","Fígado","Pele","Cérebro"],a:2},
+    {q:"Quantos ossos tem o corpo humano adulto?",o:["206","246","186","226"],a:0},
+    {q:"Qual é o maior órgão do corpo humano?",o:["Coração","Fígado","Pele","Cérebro"],a:2},
     {q:"Quem foi o primeiro humano a ir ao espaço?",o:["Neil Armstrong","Buzz Aldrin","Yuri Gagarin","John Glenn"],a:2},
     {q:"Qual é o número atômico do carbono?",o:["4","6","8","12"],a:1},
     {q:"O que é a fotossíntese?",o:["Produz energia animal","Converte luz solar em energia","Digere alimentos","Circula seiva"],a:1},
@@ -648,30 +632,10 @@ const QUESTIONS = {
     {q:"Qual é a partícula com carga negativa?",o:["Próton","Nêutron","Elétron","Fóton"],a:2},
     {q:"Qual planeta tem os anéis mais visíveis?",o:["Júpiter","Saturno","Netuno","Urano"],a:1},
     {q:"O que estuda a entomologia?",o:["Répteis","Insetos","Rochas","Estrelas"],a:1},
-    {q:"Qual é a temperatura do sol na superfície (aprox.)?",o:["3.500°C","4.800°C","5.500°C","7.800°C"],a:2},
+    {q:"Qual é a temperatura do sol na superfície (aprox.)?",o:["1.000°C","3.000°C","5.500°C","10.000°C"],a:2},
     {q:"Quantos litros de sangue um adulto tem?",o:["2-3 litros","4-6 litros","7-8 litros","9-10 litros"],a:1},
     {q:"O que é a Lei da Gravidade de Newton?",o:["Corpos se repelem","Corpos se atraem proporcionalmente às massas","A Terra gira em torno do Sol","Energia não se cria nem destrói"],a:1},
     {q:"O que é um buraco negro?",o:["Estrela muito fria","Região de gravidade extrema","Planeta morto","Cometa gigante"],a:1},
-    {q:"Qual é o único metal líquido em temperatura ambiente?",o:["Gálio","Bromo","Mercúrio","Césio"],a:2,trick:true},
-{q:"Quantas dimensões a Teoria das Cordas propõe (versão mais aceita)?",o:["4","7","10","26"],a:2},
-{q:"Qual é o elemento mais eletronegativo da tabela periódica?",o:["Oxigênio","Nitrogênio","Cloro","Flúor"],a:3},
-{q:"O que é a 'constante de Planck'?",o:["Velocidade da luz no vácuo","Relação entre energia e frequência de fótons","Carga do elétron","Constante gravitacional"],a:1},
-{q:"Qual organela celular tem seu próprio DNA separado do núcleo?",o:["Ribossomo","Retículo endoplasmático","Mitocôndria","Complexo de Golgi"],a:2},
-{q:"O que é 'antimatéria'?",o:["Matéria mais pesada que o normal","Partículas com carga oposta à matéria comum","Matéria de outro universo","Energia escura"],a:1},
-{q:"Qual é o nome do processo pelo qual as estrelas produzem energia?",o:["Fissão nuclear","Fusão nuclear","Reação química","Combustão"],a:1},
-{q:"Quantos átomos de carbono existem em 12 gramas de carbono puro?",o:["1 trilhão","6,02 x 10²³","1,38 x 10²³","9,11 x 10³¹"],a:1},
-{q:"Qual gás é responsável pelo efeito estufa em maior quantidade na atmosfera terrestre?",o:["CO2","Metano","Óxido nitroso","Vapor d'água"],a:3,trick:true},
-{q:"O que é a 'Paradoxo de Fermi'?",o:["Por que nada ultrapassa a velocidade da luz","Por que não encontramos vida extraterrestre se o universo é tão vasto","Por que a matéria existe","A impossibilidade do movimento perpétuo"],a:1},
-{q:"Qual é o pH do sangue humano saudável?",o:["6,8","7,0","7,4","7,8"],a:2},
-{q:"Qual é o nome da camada mais interna da Terra?",o:["Manto","Crosta","Núcleo interno sólido","Astenosfera"],a:2},
-{q:"Quantos pares de nervos cranianos tem o ser humano?",o:["8","10","12","14"],a:2},
-{q:"Qual é a partícula subatômica responsável pela identidade de um elemento químico?",o:["Nêutron","Elétron","Próton","Meson"],a:2},
-{q:"O que é 'bioluminescência'?",o:["Luz artificial de origem biológica","Produção de luz por organismos vivos via reação química","Fotossíntese em animais","Reflexo de luz em escamas"],a:1},
-{q:"Qual estrutura do DNA armazena a informação genética?",o:["A dupla hélice","A sequência de bases nitrogenadas","O açúcar desoxirribose","O fosfato"],a:1},
-{q:"Em física, o que é 'entropia'?",o:["Energia cinética de um sistema","Medida de desordem ou dispersão de energia","Força gravitacional","Pressão de um gás"],a:1},
-{q:"Qual é o nome do telescópio que substituiu o Hubble em 2021?",o:["Telescópio Kepler","Telescópio James Webb","Telescópio Chandra","Telescópio Spitzer"],a:1},
-{q:"O que a vacina de RNA mensageiro (mRNA) faz no corpo?",o:["Injeta vírus mortos","Instrui células a produzir proteína para gerar imunidade","Introduz anticorpos prontos","Ativa células T diretamente"],a:1},
-{q:"Qual é o nome do experimento que demonstrou a dualidade onda-partícula?",o:["Experimento de Rutherford","Experimento da dupla fenda","Experimento de Millikan","Experimento de Thomson"],a:1},
   ],
   historia: [
     {q:"Qual evento aconteceu ANTES da Independência do Brasil?",o:["Abolição da escravidão","Chegada da família real ao Brasil","Proclamação da República","Guerra do Paraguai"],a:1,trick:true},
@@ -704,26 +668,6 @@ const QUESTIONS = {
     {q:"Em que ano terminou a Segunda Guerra?",o:["1943","1944","1945","1946"],a:2},
     {q:"Qual país inventou a imprensa com tipos móveis?",o:["China","Coreia","Alemanha (Gutenberg)","Holanda"],a:2},
     {q:"Em que ano foi fundada a cidade de Roma?",o:["753 a.C.","509 a.C.","264 a.C.","27 a.C."],a:0},
-    {q:"Qual foi a causa imediata da Primeira Guerra Mundial?",o:["Rivalidade colonial","Assassinato do Arquiduque Franz Ferdinand","Crise econômica europeia","Invasão da Sérvia"],a:1},
-{q:"O Egito Antigo durou aproximadamente quantos anos?",o:["500 anos","1.000 anos","2.000 anos","3.000 anos"],a:3},
-{q:"Qual país foi o primeiro a conceder o voto feminino?",o:["EUA","Grã-Bretanha","Nova Zelândia","França"],a:2},
-{q:"O que foi a 'Solução Final' durante a Segunda Guerra?",o:["Rendição da Alemanha","Plano nazista de extermínio dos judeus","Acordo de paz entre aliados","Invasão da URSS"],a:1},
-{q:"Qual civilização inventou o zero como número?",o:["Egípcios","Gregos","Maias e indianos (independentemente)","Romanos"],a:2},
-{q:"Quantos anos durou o Império Romano do Ocidente?",o:["Cerca de 200 anos","Cerca de 500 anos","Cerca de 800 anos","Cerca de 1000 anos"],a:1},
-{q:"O que foi a 'Marcha do Sal' de Gandhi?",o:["Greve de fome","Protesto contra o imposto britânico sobre o sal","Manifestação religiosa","Caminhada simbólica até Nova Delhi"],a:1},
-{q:"Qual foi o primeiro país a abolir a escravatura?",o:["Inglaterra","França","Haiti","EUA"],a:2},
-{q:"Quem foi Espartaco?",o:["General romano","Líder de uma revolta de escravos em Roma","Filósofo grego","Rei da Macedônia"],a:1},
-{q:"Qual guerra foi chamada de 'a guerra que acabaria com todas as guerras'?",o:["Segunda Guerra Mundial","Guerra da Coreia","Primeira Guerra Mundial","Guerra Franco-Prussiana"],a:2},
-{q:"Em qual batalha Napoleão foi definitivamente derrotado?",o:["Trafalgar","Leipzig","Waterloo","Borodino"],a:2},
-{q:"O que foi o 'Plano Marshall'?",o:["Plano de ataque dos EUA à URSS","Programa americano de reconstrução econômica da Europa pós-guerra","Aliança militar da OTAN","Acordo de divisão da Alemanha"],a:1},
-{q:"Qual foi a duração da Guerra dos Cem Anos?",o:["Exatamente 100 anos","116 anos","87 anos","130 anos"],a:1,trick:true},
-{q:"Qual líder histórico disse 'Veni, vidi, vici' (Vim, vi, venci)?",o:["Alexandre o Grande","Júlio César","Napoleão","Augusto"],a:1},
-{q:"Em qual país ocorreu o genocídio de Ruanda (1994)?",o:["Congo","Uganda","Ruanda","Burundi"],a:2},
-{q:"O que foi a 'Noite dos Cristais' (Kristallnacht)?",o:["Batalha naval durante a 1ª Guerra","Pogrom antissemita na Alemanha nazista em 1938","Queda do Muro de Berlim","Ataque à embaixada americana"],a:1},
-{q:"Qual imperador romano tornaram o Cristianismo religião oficial do Império?",o:["Constantino","Teodósio","Nero","Diocleciano"],a:1},
-{q:"Quem foi o último czar da Rússia?",o:["Alexandre III","Nicolau I","Nicolau II","Alexandre II"],a:2},
-{q:"O que é a 'Magna Carta' (1215)?",o:["A Constituição americana original","Documento que limitou os poderes do rei inglês","Tratado de paz medieval","Declaração dos Direitos do Homem britânica"],a:1},
-{q:"Qual foi o nome do projeto americano que criou a bomba atômica?",o:["Projeto Apolo","Projeto Manhattan","Projeto Ulam","Operação Overload"],a:1},
   ],
   geografia: [
     {q:"Qual é a capital da Austrália? (Cuidado!)",o:["Sydney","Melbourne","Canberra","Brisbane"],a:2,trick:true},
@@ -756,26 +700,6 @@ const QUESTIONS = {
     {q:"Qual rio separa Brasil e Argentina nas Cataratas?",o:["Rio Paraná","Rio Iguaçu","Rio Uruguai","Rio da Prata"],a:1},
     {q:"Qual é a língua oficial do Brasil?",o:["Espanhol","Inglês","Português","Francês"],a:2},
     {q:"Qual é o maior lago de água doce do mundo?",o:["Lago Titicaca","Mar Cáspio","Lago Superior","Lago Vitória"],a:2},
-    {q:"Qual é o país com mais lagos de água doce do mundo?",o:["Brasil","Rússia","EUA","Canadá"],a:3},
-{q:"Qual é a cidade mais populosa do hemisfério sul?",o:["Buenos Aires","São Paulo","Sydney","Joanesburgo"],a:1},
-{q:"Por quantos países o rio Amazonas passa?",o:["1 (só Brasil)","2","3","4"],a:1,trick:true},
-{q:"Qual é o continente com mais países?",o:["Ásia","América","África","Europa"],a:2},
-{q:"Qual é o único país do mundo que é completamente cercado por outro país?",o:["Mônaco","Vaticano","San Marino","Lesoto"],a:3,trick:true},
-{q:"Em qual oceano está localizada a Fossa das Marianas?",o:["Atlântico","Índico","Ártico","Pacífico"],a:3},
-{q:"Qual é o país com a maior fronteira terrestre do mundo?",o:["Rússia","China","Brasil","EUA"],a:0},
-{q:"Quantos países formam a União Europeia atualmente?",o:["25","27","28","30"],a:1},
-{q:"Qual é a capital mais alta do mundo (altitude)?",o:["Quito","La Paz","Bogotá","Katmandu"],a:1},
-{q:"Por onde passa o Trópico de Capricórnio no Brasil?",o:["Pelo Nordeste","Pela Região Norte","Pelo centro-sul (SP, MS, PR)","Só pelo Rio de Janeiro"],a:2},
-{q:"Qual é o único país da América do Sul com costa no Pacífico e no Atlântico?",o:["Colômbia","Venezuela","Equador","Nenhum — impossível geograficamente"],a:3,trick:true},
-{q:"Qual é a maior ilha do mundo?",o:["Austrália","Groenlândia","Bornéu","Nova Guiné"],a:1,trick:true},
-{q:"Em qual país fica o deserto de Atacama, o mais seco do mundo?",o:["Peru","Argentina","Chile","Bolívia"],a:2},
-{q:"Qual é o único mar interior sem saída para o oceano?",o:["Mar Morto","Mar Cáspio","Mar de Aral","Mar Negro"],a:1,trick:true},
-{q:"Quantos fusos horários tem o Brasil?",o:["2","3","4","5"],a:2},
-{q:"Qual é o país com maior número de vulcões ativos?",o:["Japão","Indonésia","Filipinas","Islândia"],a:1},
-{q:"Qual cidade é chamada de 'A Cidade Eterna'?",o:["Atenas","Jerusalém","Roma","Cairo"],a:2},
-{q:"Qual é a língua mais falada da África?",o:["Árabe","Swahili","Hauçá","Zulu"],a:0},
-{q:"Qual é o país com mais pirâmides do mundo?",o:["Egito","México","Peru","Sudão"],a:3,trick:true},
-{q:"Qual é o nome do estreito que separa Europa e África?",o:["Estreito de Suez","Estreito de Gibraltar","Estreito de Bab-el-Mandeb","Canal da Mancha"],a:1},
   ],
   cultura: [
     {q:"Quem criou o personagem do Batman?",o:["Stan Lee","Bob Kane e Bill Finger","Jack Kirby","Neil Gaiman"],a:1,trick:true},
@@ -808,26 +732,6 @@ const QUESTIONS = {
     {q:"Quem interpreta Hermione Granger nos filmes?",o:["Keira Knightley","Emma Roberts","Emma Watson","Bonnie Wright"],a:2},
     {q:"Qual é o nome do mordomo do Batman?",o:["James Gordon","Lucius Fox","Alfred Pennyworth","Dick Grayson"],a:2},
     {q:"Qual estúdio produziu 'Toy Story'?",o:["DreamWorks","Blue Sky","Pixar","Walt Disney Animation"],a:2},
-    {q:"Qual foi o primeiro filme a arrecadar mais de 1 bilhão de dólares?",o:["Titanic","Jurassic Park","O Rei Leão (1994)","E.T."],a:1,trick:true},
-{q:"Qual personagem diz a frase 'I'll be back'?",o:["Predador","RoboCop","O Exterminador do Futuro","Judge Dredd"],a:2},
-{q:"Em 'Breaking Bad', qual é o pseudônimo de Walter White?",o:["El Chapo","Heisenberg","Los Pollos","El Profesor"],a:1},
-{q:"Qual é o nome da agência de espionagem onde James Bond trabalha?",o:["CIA","NSA","MI6","GCHQ"],a:2},
-{q:"Em 'O Senhor dos Anéis', em quantas partes Tolkien publicou o livro originalmente?",o:["1","2","3","4"],a:2},
-{q:"Qual ator interpretou o Coringa ANTES de Heath Ledger em filmes?",o:["Jack Nicholson","Cesar Romero","Mark Hamill","Tommy Lee Jones"],a:0},
-{q:"Em 'Game of Thrones', qual é o lema da Casa Stark?",o:["Fire and Blood","A Lannister always pays his debts","Winter is Coming","Ours is the Fury"],a:2},
-{q:"Qual escritor criou o personagem Sherlock Holmes?",o:["Agatha Christie","Edgar Allan Poe","Arthur Conan Doyle","G.K. Chesterton"],a:2},
-{q:"Quantos filmes compõem a trilogia original de 'O Poderoso Chefão'?",o:["2","3","4","5"],a:1},
-{q:"Qual foi o primeiro videogame comercialmente bem-sucedido da história?",o:["Space Invaders","Pong","Pac-Man","Asteroids"],a:1,trick:true},
-{q:"Em qual série a personagem principal trabalha em uma agência de publicidade nos anos 60?",o:["Suits","Boardwalk Empire","Mad Men","The Crown"],a:2},
-{q:"Qual é o nome completo de 'Walter White' de Breaking Bad?",o:["Walter Hartwell White","Walter Henry White","Walter James White","Walter Bruce White"],a:0},
-{q:"Quem escreveu o livro original em que se baseia 'Duna' (Dune)?",o:["Isaac Asimov","Arthur C. Clarke","Frank Herbert","Ray Bradbury"],a:2},
-{q:"Em qual filme Marlon Brando interpreta o Padrinho?",o:["Apocalipse Now","O Poderoso Chefão","Ultimo Tango em Paris","A Streetcar Named Desire"],a:1},
-{q:"Qual série da HBO mostrou o desenvolvimento de inteligência artificial em um parque temático?",o:["Black Mirror","Halt and Catch Fire","Westworld","Humans"],a:2},
-{q:"Qual é o real nome de 'Homem de Ferro' nos quadrinhos?",o:["James Rhodes","Tony Stark","Howard Stark","Steve Rogers"],a:1},
-{q:"Em qual país foi produzida a série 'Dark', considerada uma das melhores da Netflix?",o:["Suécia","Noruega","Áustria","Alemanha"],a:3},
-{q:"Qual personagem diz 'May the odds be ever in your favor'?",o:["Katniss Everdeen","Effie Trinket","Presidente Snow","Haymitch"],a:1},
-{q:"Qual animação da Pixar foi a primeira a vencer o Oscar de Melhor Filme de Animação?",o:["Toy Story","Monstros S.A.","A Vida de Inseto","Shrek"],a:3,trick:true},
-{q:"Qual é o nome do mordomo robótico de Tony Stark antes de J.A.R.V.I.S.?",o:["H.O.M.E.R.","E.D.I.T.H.","B.U.D.D.Y.","Não havia predecessor"],a:3,trick:true},
   ],
   musica: [
     {q:"A banda Queen foi formada em qual país?",o:["EUA","Austrália","Inglaterra","Irlanda"],a:2,trick:true},
@@ -860,26 +764,6 @@ const QUESTIONS = {
     {q:"Qual artista vendeu mais de 1 bilhão de discos?",o:["Elvis Presley","The Beatles","Michael Jackson","Madonna"],a:1},
     {q:"De qual país é originário o K-Pop?",o:["Japão","China","Coreia do Sul","Tailândia"],a:2},
     {q:"Qual instrumento é característico do Blues?",o:["Violino","Guitarra elétrica","Oboé","Clarinete"],a:1},
-    {q:"Qual banda gravou o álbum 'The Dark Side of the Moon'?",o:["Led Zeppelin","Pink Floyd","The Who","Genesis"],a:1},
-{q:"Quantas semanas 'The Dark Side of the Moon' ficou nas paradas americanas?",o:["94","200","741","Mais de 900"],a:3},
-{q:"Qual cantor brasileiro vendeu mais discos internacionalmente?",o:["Roberto Carlos","Sérgio Mendes","Astrud Gilberto","Gilberto Gil"],a:1,trick:true},
-{q:"O que significa 'sincopado' em música?",o:["Muito rápido","Muito lento","Acento fora do tempo forte","Sem ritmo definido"],a:2},
-{q:"Qual instrumento tem mais cordas: harpa ou violão?",o:["Violão (6)","Harpa (47 cordas aprox.)","São iguais","Depende do modelo"],a:1},
-{q:"Qual grupo musical ficou mais tempo no topo das paradas britânicas com um único álbum?",o:["The Beatles","Adele","Pink Floyd","ABBA"],a:2},
-{q:"Em que ano Cazuza faleceu?",o:["1988","1989","1990","1991"],a:2},
-{q:"Qual nota musical vem depois do 'Sol' na escala?",o:["Fá","Lá","Si","Ré"],a:1},
-{q:"Qual artista ficou mais semanas no topo do Billboard Hot 100 com uma única música?",o:["Mariah Carey","Drake","Lil Nas X","Ed Sheeran"],a:2},
-{q:"O que é um 'drop' em música eletrônica?",o:["Introdução do beat","Momento de maior impacto após o buildup","Fim da música","Solo instrumental"],a:1},
-{q:"Qual é o nome do estilo musical criado por João Gilberto nos anos 1950?",o:["Samba-canção","Bossa Nova","Tropicalismo","MPB"],a:1},
-{q:"Qual instrumento Jimi Hendrix tocava com a mão esquerda em um violão destro invertido?",o:["Baixo","Violão","Guitarra","Banjo"],a:2},
-{q:"Qual é o nome da ópera mais encenada no mundo?",o:["La Traviata","Carmen","A Flauta Mágica","Madama Butterfly"],a:1},
-{q:"O que é 'timbre' em música?",o:["Altura do som","Duração da nota","Qualidade que distingue sons de mesma frequência","Volume do som"],a:2},
-{q:"Qual cantor brasileiro foi o primeiro a se apresentar no Rock in Rio (1985)?",o:["Paralamas do Sucesso","Barão Vermelho","RPM","Kid Abelha"],a:1},
-{q:"Em qual ano Raul Seixas lançou 'Metamorfose Ambulante'?",o:["1971","1973","1975","1977"],a:1},
-{q:"Qual é o nome da técnica vocal que usa alternância entre voz normal e voz de cabeça?",o:["Vibrato","Falsete","Yodel","Melisma"],a:2},
-{q:"Qual artista tem mais números 1 no Billboard Hot 100?",o:["Mariah Carey","Michael Jackson","Drake","Beyoncé"],a:2},
-{q:"Qual banda foi formada pelos ex-membros dos Beatles após a separação?",o:["Nenhuma banda formal","Wings (Paul McCartney)","Plastic Ono Band e Wings","Todas as anteriores estão corretas"],a:3},
-{q:"O que é 'compasso binário' em música?",o:["Dois instrumentos tocando juntos","Compasso com dois tempos por unidade","Música de dois artistas","Ritmo com duas batidas por segundo"],a:1},
   ],
   gastronomia: [
     {q:"O que é 'acarajé'? (Cuidado!)",o:["Bolinho de feijão-fradinho frito em azeite de dendê","Bolinho de mandioca frita","Prato de peixe da Bahia","Bolo típico nordestino"],a:0,trick:true},
@@ -912,30 +796,10 @@ const QUESTIONS = {
     {q:"Qual é o prato típico do Nordeste com carne de sol?",o:["Feijoada","Buchada","Baião de dois","Caldeirada"],a:2},
     {q:"De onde vem o prato 'shawarma'?",o:["Grécia","Turquia/Oriente Médio","Índia","Egito"],a:1},
     {q:"O que é 'ceviche'?",o:["Prato de arroz peruano","Peixe cru marinado em limão","Sopa colombiana","Carne grelhada mexicana"],a:1},
-    {q:"O que diferencia 'al dente' de massa cozida normalmente?",o:["Mais tempo de cozimento","Massa ainda um pouco firme ao morder","Adição de azeite durante cozimento","Massa cozida sem sal"],a:1},
-{q:"Qual é o ingrediente que dá cor ao açafrão e ao risoto milanês?",o:["Cúrcuma","Carotenoides","Crocina (do açafrão)","Annatto"],a:2},
-{q:"O que é 'umami'?",o:["Tempero japonês","O quinto gosto básico (sabor saboroso)","Tipo de fermentação","Molho de soja especial"],a:1},
-{q:"Qual é o método de cocção do ceviche?",o:["Frito","Grelhado","Marinado em ácido cítrico (sem calor)","Cozido em vapor"],a:2,trick:true},
-{q:"Qual é o país de origem do croissant?",o:["França","Itália","Áustria","Bélgica"],a:2,trick:true},
-{q:"O que é 'mise en place' na gastronomia?",o:["Tipo de prato francês","Organização e preparação de ingredientes antes de cozinhar","Apresentação do prato","Método de corte"],a:1},
-{q:"Qual é a diferença entre 'creme brûlée' e 'pudim'?",o:["Não há diferença","Creme brûlée leva creme e é caramelizado na superfície; pudim usa leite e é assado em banho-maria","Creme brûlée é mais doce","Pudim é francês, creme brûlée é brasileiro"],a:1},
-{q:"O que é 'maillard' na culinária?",o:["Técnica de corte","Reação química que dá cor e sabor ao dourar alimentos","Tipo de molho francês","Método de conserva"],a:1},
-{q:"Qual é o vinho mais caro já vendido em leilão?",o:["Pétrus","Romanée-Conti","Château Margaux","Screaming Eagle"],a:1},
-{q:"O que é 'gastrique' em culinária francesa?",o:["Tipo de queijo","Redução de vinagre e açúcar como base de molho","Técnica de assar","Corte específico de carne"],a:1},
-{q:"Qual é o ingrediente principal do 'miso' japonês?",o:["Arroz fermentado","Pasta de soja fermentada","Alga marinha","Peixe defumado"],a:1},
-{q:"O que são 'trufas' na gastronomia?",o:["Doces de chocolate","Fungos subterrâneos raros e caros","Tipo de cogumelo cultivado","Especiaria asiática"],a:1},
-{q:"Qual é o processo de fazer 'ghee'?",o:["Fermentar leite de búfala","Clarificar manteiga removendo sólidos e água","Defumar queijo","Envelhecer creme de leite"],a:1},
-{q:"O que é 'carpaccio'?",o:["Peixe cozido em vapor","Carne ou peixe cru fatiado finamente","Tipo de massa italiana","Molho à base de vinho"],a:1},
-{q:"Qual é o único queijo com denominação de origem que pode ser chamado de 'Champagne'?",o:["Champagne é vinho, não queijo — pegadinha!","Camembert de Normandie","Brie de Meaux","Époisses"],a:0,trick:true},
-{q:"O que é 'sous-vide'?",o:["Técnica de grelhar em alta temperatura","Cozimento em embalagem selada a vácuo em temperatura precisa","Método de defumar a frio","Fritura em óleo especial"],a:1},
-{q:"Qual especiaria é extraída do estigma de uma flor?",o:["Canela","Pimenta-do-reino","Açafrão","Noz-moscada"],a:2},
-{q:"O que é 'fermentação lática'?",o:["Produção de álcool por leveduras","Transformação de açúcar em ácido lático por bactérias (base do iogurte e chucrute)","Fermentação do vinho","Processo do vinagre"],a:1},
-{q:"Qual é o nome do corte de carne responsável pelo 'wagyu'?",o:["Wagyu é uma raça bovina japonesa, não um corte","Contrafilé","Picanha","Entrecôte"],a:0,trick:true},
-{q:"O que é 'burrata'?",o:["Queijo similar à muçarela com interior cremoso","Tipo de manteiga italiana","Massa fresca recheada","Creme de leite defumado"],a:0},
   ],
   youtube: [
     {q:"Qual canal foi o PRIMEIRO a atingir 100 milhões de inscritos?",o:["PewDiePie","T-Series","MrBeast","Justin Bieber"],a:0,trick:true},
-    {q:"Quem atualmente tem mais inscritos no YouTube?",o:["PewDiePie","MrBeast","T-Series","Cocomelon"],a:1,trick:true},
+    {q:"Quem atualmente tem mais inscritos no YouTube?",o:["PewDiePie","MrBeast","T-Series","Cocomelon"],a:2,trick:true},
     {q:"O botão 'Não Gosto' foi removido publicamente em qual ano?",o:["2019","2020","2021","2022"],a:2,trick:true},
     {q:"Qual foi o primeiro vídeo a atingir 1 bilhão de views?",o:["Gangnam Style","Baby (Justin Bieber)","Despacito","Charlie bit my finger"],a:1,trick:true},
     {q:"Em que ano o YouTube foi criado?",o:["2003","2004","2005","2006"],a:2},
@@ -945,7 +809,7 @@ const QUESTIONS = {
     {q:"Qual vídeo tem mais visualizações de todos os tempos?",o:["Gangnam Style","Baby Shark","Despacito","Bohemian Rhapsody"],a:1},
     {q:"O que é um 'short' no YouTube?",o:["Vídeo longo","Vídeo vertical curto até 60s","Vídeo ao vivo","Podcast"],a:1},
     {q:"O que significa 'clickbait'?",o:["Vídeo viral","Thumbnail/título enganoso para atrair cliques","Comentário patrocinado","Parceria paga"],a:1},
-    {q:"O que é 'desmonetização' no YouTube?",o:["Aumento de monetização","Suspensão dos ganhos de um vídeo","Novo formato de anúncio","Limite de visualizações"],a:1},
+    {q:"O que é 'demonetização' no YouTube?",o:["Aumento de monetização","Suspensão dos ganhos de um vídeo","Novo formato de anúncio","Limite de visualizações"],a:1},
     {q:"O que é 'Super Chat' no YouTube?",o:["Comentário em destaque pago durante lives","Mensagem privada","Sistema de moderação","Recurso de tradução"],a:0},
     {q:"Qual foi o primeiro vídeo postado no YouTube?",o:["Charlie bit my finger","Me at the zoo","Evolution of Dance","Chocolate Rain"],a:1},
     {q:"Quem foi o primeiro YouTuber a atingir 50 milhões de inscritos?",o:["PewDiePie","Smosh","Ray William Johnson","Nigahiga"],a:0},
@@ -956,15 +820,9 @@ const QUESTIONS = {
     {q:"Qual canal brasileiro ganhou fama com paródias e humor?",o:["Jovem Nerd","Porta dos Fundos","Nostalgia","Manual do Mundo"],a:1},
     {q:"O que significa 'VOD' no contexto de streaming?",o:["Vídeo ao Vivo","Video on Demand","Volume de Download","Vídeo Oficial Digital"],a:1},
     {q:"O que é 'endcard' no YouTube?",o:["Vinheta de abertura","Tela final com links clicáveis","Patrocínio exibido no vídeo","Legenda automática"],a:1},
-    {q:"O que significa 'subscribe' em português?",o:["Curtir","Compartilhar","Se inscrever","Comentar"],a:2},
+    {q:"O que significa 'subcribe' em português?",o:["Curtir","Compartilhar","Se inscrever","Comentar"],a:2},
     {q:"Qual é o nome do programa de monetização de Shorts do YouTube?",o:["YouTube Fund","YouTube Shorts Bonus","YouTube Partner Program (Shorts)","Shorts Creator Fund"],a:2},
     {q:"O que é 'community post' no YouTube?",o:["Vídeo curto","Publicação de texto/imagem no canal","Comentário fixado","Live exclusiva"],a:1},
-    {q:"Qual foi o primeiro vídeo do canal 'Berinbass'?",o:["Bebê Reborn","Felca","Speedrun","Pizza Tower"],a:3},
-    {q:"Qual foi o primeiro canal a atingir 10 milhões de inscritos no YouTube?",o:["Smosh","PewDiePie","T Series","MrBeast"],a:0},
-{q:"Quanto tempo de vídeo é enviado ao YouTube a cada hora?",o:["100 horas","500 horas","1.000 horas","Mais de 500 horas"],a:3},
-{q:"O que é 'AdSense' no contexto do YouTube?",o:["Sistema de moderação","Plataforma de anúncios do Google que paga criadores","Ferramenta de edição","Programa de parcerias exclusivo"],a:1},
-{q:"Qual youtuber teve uma série de Minecraft?",o:["PewDiePie","Ninja","MrBeast","Alanzoka"],a:0},
-{q:"Qual é o nome do sistema de algoritmo do YouTube que recomenda vídeos?",o:["RankBrain","Deep Neural Network Recommendation","YouTube Algorithm","Não tem nome oficial divulgado"],a:3},
   ],
   memes: [
     {q:"De qual filme é o meme 'This is Fine' (cachorro no fogo)?",o:["Não é de filme — é HQ/webcomic","Jurassic Park","The Office","Toy Story"],a:0,trick:true},
@@ -992,15 +850,10 @@ const QUESTIONS = {
     {q:"O que significa o meme 'No cap'?",o:["Sem chapéu","Sério, sem mentira","Sem problema","Certo, confirmado"],a:1},
     {q:"De onde vem o meme 'Shooting Stars' (homem voando)?",o:["Vine","YouTube","TikTok","Instagram"],a:0},
     {q:"O que é 'copypasta' no contexto de memes?",o:["Texto colado como imagem","Texto longo copiado e colado repetidamente","Meme de culinária","Formato de vídeo"],a:1},
-    {q:"De onde vem o meme 'Pepe the Frog'?",o:["4chan","Reddit","Quadrinho 'Boy's Club' de Matt Furie","Twitter"],a:2},
-{q:"O que significa 'based' no contexto de memes?",o:["Baseado em fatos","Alguém que age com confiança sem se importar com opinião alheia","Informação confirmada","Meme antigo"],a:1},
-{q:"Qual é a origem do meme 'Giga Chad'?",o:["Personagem de HQ","Fotos editadas de Ernest Khalimov","Ator de filme","Personagem de anime"],a:1},
-{q:"O que é 'lore' no contexto de memes?",o:["Meme mais antigo","História e contexto acumulado de um personagem ou saga de memes","Tipo de formato","Meme explicativo"],a:1},
-{q:"De onde vem a expressão 'touch grass' usada em memes?",o:["Referência a jogo","Sugestão irônica de sair do computador e ter contato com a realidade","Meme de jardinagem","Gíria britânica"],a:1},
   ],
   jogos: [
     {q:"Qual jogo NÃO foi desenvolvido pela Nintendo?",o:["Super Mario","The Legend of Zelda","Sonic the Hedgehog","Metroid"],a:2,trick:true},
-    {q:"Minecraft foi criado por quem?",o:["Markus Persson","Jeb_","Dinnerbone","Herobrine"],a:0,trick:true},
+    {q:"Minecraft foi criado por quem?",o:["Notch (Markus Persson)","Jeb_","Dinnerbone","Herobrine"],a:0,trick:true},
     {q:"GTA V foi lançado em qual ano?",o:["2011","2012","2013","2014"],a:2,trick:true},
     {q:"Qual é o personagem PRINCIPAL de The Legend of Zelda?",o:["Zelda","Link","Ganon","Impa"],a:1,trick:true},
     {q:"Em qual país a Rockstar Games foi fundada?",o:["EUA","Reino Unido","Canadá","Austrália"],a:1,trick:true},
@@ -1029,13 +882,6 @@ const QUESTIONS = {
     {q:"O que é 'DLC'?",o:["Modo online","Conteúdo adicional pago/gratuito","Atualização de segurança","Liga de jogadores"],a:1},
     {q:"Qual é o nome do vilão principal de Mario?",o:["Wario","Bowser","Kamek","Koopa"],a:1},
     {q:"Qual plataforma de jogos é da Valve?",o:["Origin","Epic Games Store","Steam","GOG"],a:2},
-    {q:"Qual é o nome do protagonista de 'Cyberpunk 2077'?",o:["Johnny Silverhand","V (personalizável)","Jackie Welles","T-Bug"],a:1,trick:true},
-{q:"Qual é o jogo indie mais vendido de todos os tempos?",o:["Among Us","Undertale","Stardew Valley","Hollow Knight"],a:2},
-{q:"O que é 'roguelike' como gênero de jogo?",o:["Jogo de tiro em primeira pessoa","Jogo com morte permanente, geração procedural de mapas e reinício","Jogo de exploração aberta","Simulador de vida"],a:1},
-{q:"Qual empresa criou o motor gráfico Unreal Engine?",o:["Unity","Epic Games","EA","Valve"],a:1},
-{q:"Qual é o jogo mais longo (horas para completar) já feito?",o:["The Witcher 3","Persona 5","Dwarf Fortress","Fallout 4"],a:2},
-{q:"O que é 'permadeath' em jogos?",o:["Morte instantânea por inimigo","Quando o personagem morre definitivamente sem possibilidade de continuar","Dificuldade máxima","Modo online eliminatório"],a:1},
-{q:"Qual é o nome da moeda no universo de 'The Witcher'?",o:["Ouro","Coroa","Orens, novigraden e ducados","Florim"],a:2},
   ],
   geek: [
     {q:"Em 'Star Wars', quem é o pai de Luke Skywalker?",o:["Obi-Wan Kenobi","Han Solo","Darth Vader","O Imperador"],a:2,trick:true},
@@ -1068,14 +914,6 @@ const QUESTIONS = {
     {q:"Em 'Stranger Things', qual é o nome do vilão da Dimensão Invertida?",o:["Mind Flayer","Demogorgon","Vecna","Billy"],a:2},
     {q:"Qual é o nome do grupo de heróis de 'Guardians of the Galaxy'?",o:["Defensores","Guardiões da Galáxia","Nova Corps","Aniquiladores"],a:1},
     {q:"Em 'Dragon Ball Z', qual é a transformação mais conhecida de Goku?",o:["Kaioken","Super Saiyajin","Ultra Instinto","Ozaru"],a:1},
-    {q:"Qual é o nome da cidade natal de Superman?",o:["Metropolis","Gotham","Smallville","Krypton"],a:2,trick:true},
-{q:"Em 'Duna', o que é o 'espício' (spice melange)?",o:["Arma química","Substância que permite viagem espacial e prolonga a vida","Moeda local","Religião de Arrakis"],a:1},
-{q:"Qual é o nome do robô principal de 'Interestelar' (Interstellar)?",o:["HAL","TARS","CASE","R2D2"],a:1},
-{q:"Em 'Matrix', qual é o nome da cidade onde os humanos livres vivem?",o:["Zion","Babylon","Eden","Arcadia"],a:0},
-{q:"Qual é o nome do vilão principal de 'Cowboy Bebop'?",o:["Spike Spiegel","Vicious","Jet Black","Pierce Lowe"],a:1},
-{q:"Em 'The Last of Us', o fungo que causa a infecção é baseado em qual fungo real?",o:["Aspergillus","Ophiocordyceps (fungo de formigas zumbis)","Candida","Fusarium"],a:1},
-{q:"Qual é o nome do gênero literário que mistura estética vitoriana com tecnologia avançada?",o:["Cyberpunk","Dieselpunk","Steampunk","Solarpunk"],a:2},
-{q:"Em 'Fullmetal Alchemist', qual é a Lei Equivalente da Alquimia?",o:["Lei da Conservação da Matéria","Troca Equivalente — para criar, algo de igual valor deve ser sacrificado","Lei da Transmutação","Princípio da Energia Máxima"],a:1},
   ],
 };
 
@@ -1151,24 +989,65 @@ async function init() {
   myId = localStorage.getItem('qsb_myid') || genId();
   localStorage.setItem('qsb_myid', myId);
   myEmoji = localStorage.getItem('qsb_emoji') || ALL_EMOJIS[Math.floor(Math.random()*ALL_EMOJIS.length)];
-  const cfg = getConfig();
-  if (!cfg) { showScreen('setup'); return; }
-  try {
-    const app = initializeApp(cfg);
-    db = getDatabase(app);
-    showScreen('home');
-  } catch(e) {
-    console.error(e);
-    showScreen('setup');
-    toast('Erro na configuração Firebase','err');
+  // Check URL params for invite link
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlCode = urlParams.get('code');
+  const urlDbUrl = urlParams.get('db');
+
+  if (urlCode) {
+    // Pre-fill the join code field
+    const codeInp = document.getElementById('room-code-inp');
+    if (codeInp) codeInp.value = urlCode;
+  }
+
+  // Always go to home
+  showScreen('home');
+
+  // Try to init Firebase: prefer saved config, fall back to URL db param
+  let cfg = getConfig();
+  if (!cfg && urlDbUrl) {
+    // Guest using invite link — create minimal config from URL
+    cfg = { apiKey:'auto', databaseURL: decodeURIComponent(urlDbUrl),
+            projectId:'auto', storageBucket:'', messagingSenderId:'', appId:'auto' };
+    localStorage.setItem('qsb_config', JSON.stringify(cfg));
+  }
+  if (cfg) {
+    try {
+      const app = initializeApp(cfg);
+      db = getDatabase(app);
+    } catch(e) { db = null; console.error(e); }
+  }
+
+  // If came with invite link and name already saved, focus name field
+  if (urlCode) {
+    setTimeout(() => document.getElementById('player-name')?.focus(), 200);
   }
 }
 window.showSetup = () => showScreen('setup');
+
+async function ensureFirebase() {
+  if (db) return true;
+  const cfg = getConfig();
+  if (!cfg) return false;
+  try {
+    const app = initializeApp(cfg);
+    db = getDatabase(app);
+    return true;
+  } catch(e) { return false; }
+}
 
 /* ========== ROOM MANAGEMENT ========== */
 async function createRoom() {
   const n = document.getElementById('player-name').value.trim();
   if (!n) { toast('Digite seu nome!','err'); return; }
+  if (!db) {
+    const ok = await ensureFirebase();
+    if (!ok) {
+      toast('Configure o Firebase para criar uma sala!','err');
+      setTimeout(() => showScreen('setup'), 600);
+      return;
+    }
+  }
   myName = n;
   const code = genRoomCode();
   roomId = code;
@@ -1193,6 +1072,33 @@ async function joinRoom() {
   const code = document.getElementById('room-code-inp').value.trim().toUpperCase();
   if (!n) { toast('Digite seu nome!','err'); return; }
   if (!code || code.length < 4) { toast('Digite o código da sala!','err'); return; }
+  // Ensure Firebase: guest can use URL param ?db=... (from host shared link)
+  if (!db) {
+    const urlDb = new URLSearchParams(window.location.search).get('db');
+    if (urlDb) {
+      // Auto-configure using host's databaseURL from the invite link
+      try {
+        const guestCfg = { apiKey:'AIzaGuest', databaseURL: decodeURIComponent(urlDb), projectId:'guest', appId:'guest' };
+        // Check if we already have a proper config saved
+        const savedCfg = getConfig();
+        const cfg = savedCfg || guestCfg;
+        if (!savedCfg) {
+          // Save minimal config for this session
+          localStorage.setItem('qsb_config', JSON.stringify({ ...guestCfg, apiKey: urlDb.includes('firebaseio') ? 'auto' : 'auto' }));
+        }
+        const app = initializeApp(cfg, 'guest-' + Date.now());
+        db = getDatabase(app);
+      } catch(e) { console.error(e); }
+    }
+    if (!db) {
+      const ok = await ensureFirebase();
+      if (!ok) {
+        // Show simple guest dialog (just databaseURL) instead of full setup
+        document.getElementById('guest-setup-overlay').style.display = 'flex';
+        return;
+      }
+    }
+  }
   myName = n;
   const snap = await get(ref(db, `rooms/${code}`));
   if (!snap.exists()) { toast('Sala não encontrada!','err'); return; }
@@ -1212,6 +1118,21 @@ async function joinRoom() {
   showScreen('lobby');
 }
 window.joinRoom = joinRoom;
+
+window.connectAsGuest = async function() {
+  const dbUrl = document.getElementById('guest-db-url')?.value.trim();
+  if (!dbUrl || !dbUrl.includes('firebaseio')) { toast('URL inválida!','err'); return; }
+  try {
+    const cfg = { apiKey:'auto', databaseURL: dbUrl, projectId:'auto', storageBucket:'', messagingSenderId:'', appId:'auto' };
+    localStorage.setItem('qsb_config', JSON.stringify(cfg));
+    const app = initializeApp(cfg, 'guest-' + Date.now());
+    db = getDatabase(app);
+    document.getElementById('guest-setup-overlay').style.display = 'none';
+    toast('Conectado! Agora clique em Entrar.','ok');
+  } catch(e) {
+    toast('Erro ao conectar. Verifique a URL.','err');
+  }
+};
 
 function listenRoom(code) {
   if (roomListener) roomListener();
@@ -1259,7 +1180,17 @@ window.leaveRoom = leaveRoom;
 
 function copyCode() {
   const code = document.getElementById('lobby-code').textContent;
-  navigator.clipboard.writeText(code).then(() => toast('Código copiado!','ok')).catch(() => {});
+  const cfg = getConfig();
+  // Build shareable link with db param so guests don't need to configure Firebase
+  let shareText = code;
+  if (cfg?.databaseURL) {
+    const base = window.location.href.split('?')[0];
+    const link = `${base}?code=${code}&db=${encodeURIComponent(cfg.databaseURL)}`;
+    shareText = link;
+  }
+  navigator.clipboard.writeText(shareText).then(() => toast('Link copiado! Envie para os amigos 🎉','ok')).catch(() => {
+    navigator.clipboard.writeText(code).then(() => toast('Código copiado!','ok')).catch(() => {});
+  });
 }
 window.copyCode = copyCode;
 
