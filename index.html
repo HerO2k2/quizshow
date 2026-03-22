@@ -1253,6 +1253,17 @@ function handleRoomUpdate(room) {
   }
   updateScoreBar(room);
   checkFloatingStar(room);
+  // If we just returned from a custom question (customQ cleared, state=question/theme)
+  // reset all question-tracking locals so no stale keys cause issues
+  if (!room.customQ && localRoom && localRoom.customQ?.active === false) {
+    // customQ was active last cycle, now gone — full reset of question state
+    questionKey = '';
+    hasAnswered = false;
+    timerShortened = false;
+    cqVoteKey = '';
+    cqAnswered = false;
+    if (cqTimerTickInterval) { clearInterval(cqTimerTickInterval); cqTimerTickInterval = null; }
+  }
   switch(room.state) {
     case 'lobby':            renderLobby(room); break;
     case 'drawing':          renderDraw(room); break;
@@ -1650,20 +1661,20 @@ async function advanceToResult(room) {
       baseDelta = p.score > 0 ? -1 : 0;
     }
 
-    // ⭐ Star: +2 only for THIS player when they answer correctly
+    // ⭐ Star: always consumed on any answer (correct = +2, wrong/noAnswer = normal penalty)
     const hasStar = (p.powerUps?.star || 0) > 0;
-    let finalDelta = baseDelta; // baseDelta is 1 for correct, -1 for wrong, 0 for noAnswer
+    let finalDelta = baseDelta;
 
-    if (correct) {
-      if (hasStar) {
-        // Star gives flat +2 (overrides streak bonus)
-        finalDelta = 2;
-        updates[`players/${id}/powerUps/star`] = Math.max(0, (p.powerUps?.star||0) - 1);
-      } else if (currentStreak >= 3) {
-        // 🔥 Streak double: only if no star
-        finalDelta = 2;
-      }
-    } else if (!correct && currentStreak <= -3) {
+    if (hasStar) {
+      // Star is always spent this question regardless of outcome
+      updates[`players/${id}/powerUps/star`] = Math.max(0, (p.powerUps?.star||0) - 1);
+      if (correct) finalDelta = 2;  // bonus only fires on correct
+      // wrong/noAnswer: normal delta applies, star just gets consumed
+    } else if (correct && currentStreak >= 3) {
+      // 🔥 Streak double (only without star)
+      finalDelta = 2;
+    }
+    if (!correct && !noAnswer && currentStreak <= -3) {
       // 💧 Water penalty
       finalDelta = p.score >= 2 ? -2 : (p.score > 0 ? -1 : 0);
     }
@@ -2028,10 +2039,11 @@ function renderPowerUpBar(room) {
   // 💥 Boom
   if ((pu.boom || 0) > 0 && !pu.boomUsed) {
     const chip = document.createElement('div');
-    chip.className = 'pu-chip boom';
+    const inCQ = ['custom_q_create','custom_q_vote','custom_q_result'].includes(room.state);
+    chip.className = 'pu-chip boom' + (inCQ ? ' disabled' : '');
     chip.innerHTML = `💥 Criar Pergunta`;
-    chip.title = 'Crie uma pergunta agora!';
-    chip.onclick = () => activateBoom();
+    chip.title = inCQ ? 'Aguarde a pergunta atual terminar' : 'Crie uma pergunta agora!';
+    if (!inCQ) chip.onclick = () => activateBoom();
     bar.appendChild(chip);
   }
 
@@ -2189,10 +2201,15 @@ function _old_ninja_stub() {
 } // end _old_ninja_stub
 
 /* ========== POWER-UP: 💥 Custom Question ========== */
+let boomActivating = false;
 async function activateBoom() {
-  if (!localRoom || !roomRef) return;
+  if (!localRoom || !roomRef || boomActivating) return;
   const me = localRoom.players?.[myId];
-  if (!me?.powerUps?.boom) return;
+  if (!me?.powerUps?.boom || me?.powerUps?.boomUsed) return;
+  // Guard against being in CQ states already
+  const blockedStates = ['custom_q_create','custom_q_vote','custom_q_result'];
+  if (blockedStates.includes(localRoom.state)) return;
+  boomActivating = true;
   playSound('boom');
   // Pause all local timers immediately
   stopTimer();
@@ -2206,7 +2223,7 @@ async function activateBoom() {
   // during the custom Q creation phase
   const farFuture = Date.now() + 999999;
   await update(roomRef, {
-    qEnd: farFuture,          // freeze the question timer for everyone
+    qEnd: farFuture,
     state: 'custom_q_create',
     customQ: {
       creatorId: myId, question:'', options:['','','',''], correct:-1,
@@ -2215,6 +2232,7 @@ async function activateBoom() {
       prevTheme, prevLastTheme
     }
   });
+  boomActivating = false;
 }
 
 let cqTimerInterval = null;
@@ -2233,14 +2251,30 @@ function renderCustomQCreate(room) {
     document.getElementById('cq-skip-count').textContent = '';
     return;
   }
+  // If we were previously in custom-q screen but state changed back and now returned, reset
+  const screenAlreadyActive = document.getElementById('screen-custom-q')?.classList.contains('active');
   showScreen('custom-q');
-  if (cqTimerInterval) return; // already running
+  if (cqTimerInterval) {
+    // Already running — just refresh display, don't restart
+    return;
+  }
+  // Clear fields in case of re-render
+  if (!screenAlreadyActive) {
+    const qEl = document.getElementById('cq-question');
+    if (qEl) qEl.value = '';
+    [0,1,2,3].forEach(i => { const o = document.getElementById('cq-o'+i); if(o) o.value=''; });
+    document.querySelectorAll('.cq-correct-btn').forEach(b => b.classList.remove('selected'));
+    cqCorrectIdxLocal = -1;
+  }
   let t = 60;
   document.getElementById('cq-timer').textContent = t;
   cqTimerInterval = setInterval(() => {
     t--;
     const el = document.getElementById('cq-timer');
-    if (el) el.textContent = t;
+    if (el) {
+      el.textContent = t;
+      el.style.color = t <= 10 ? 'var(--red)' : 'var(--gold)';
+    }
     if (t <= 0) {
       clearInterval(cqTimerInterval); cqTimerInterval = null;
       submitCustomQuestion();
@@ -2477,10 +2511,10 @@ async function resolveCustomQ(room) {
     const prev = cq.prevState || 'question';
     if (prev === 'theme_select') {
       themeScreenState = '';
-      await update(roomRef, { state:'theme_select', 'customQ/active':false, answers:{} });
+      await update(roomRef, { state:'theme_select', customQ:null, answers:{} });
     } else {
       questionKey = ''; hasAnswered = false; timerShortened = false;
-      await update(roomRef, { state:'question', 'customQ/active':false, answers:{}, qEnd:Date.now()+ANSWER_TIME*1000 });
+      await update(roomRef, { state:'question', customQ:null, answers:{}, qEnd:Date.now()+ANSWER_TIME*1000 });
     }
     return;
   }
@@ -2509,19 +2543,19 @@ async function resolveCustomQ(room) {
   updates.state = 'custom_q_result';
   updates['customQ/active'] = false;
   await update(roomRef, updates);
-  // After 4s, restore previous state
+  // Capture prevState NOW (before localRoom changes)
+  const prevStateCapture = cq.prevState || 'question';
+  // After 4s, restore — use captured value, not localRoom
   setTimeout(async () => {
-    if (!localRoom) return;
-    const prev = localRoom.customQ?.prevState || 'question';
+    if (!roomRef) return;
     cqVoteKey = '';
     cqAnswered = false;
     if (cqTimerTickInterval) { clearInterval(cqTimerTickInterval); cqTimerTickInterval = null; }
-    const restore = {};
-    if (prev === 'theme_select') {
+    const restore = { customQ: null };
+    if (prevStateCapture === 'theme_select') {
       themeScreenState = '';
       restore.state = 'theme_select';
       restore.answers = {};
-      restore['customQ'] = null;
     } else {
       questionKey = '';
       hasAnswered = false;
@@ -2529,7 +2563,6 @@ async function resolveCustomQ(room) {
       restore.state = 'question';
       restore.answers = {};
       restore.qEnd = Date.now() + ANSWER_TIME * 1000;
-      restore['customQ'] = null;
     }
     await update(roomRef, restore);
   }, 4000);
