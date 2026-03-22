@@ -1263,6 +1263,7 @@ function handleRoomUpdate(room) {
     case 'game_over':        renderFinal(room); break;
     case 'custom_q_create':  renderCustomQCreate(room); break;
     case 'custom_q_vote':    renderCustomQVote(room); break;
+    case 'custom_q_result':  renderCustomQResult(room); break;
   }
 }
 
@@ -1501,6 +1502,8 @@ function selectQuestions(theme, count, used) {
 /* ========== QUESTION (com trick badge e timer reduzido após 1ª resposta) ========== */
 function renderQuestion(room) {
   stopThemeTimer();
+  // Stop CQ timer if switching back from custom question
+  if (cqTimerTickInterval) { clearInterval(cqTimerTickInterval); cqTimerTickInterval = null; }
   const qRef = `${room.round}_${room.qIdx}_${room.theme}`;
   if (questionKey !== qRef) {
     questionKey = qRef;
@@ -1591,6 +1594,9 @@ window.submitAnswer = submitAnswer;
 
 function checkAutoAdvance(room) {
   if (!isHost) return;
+  // Never auto-advance while a custom question is active
+  if (['custom_q_create','custom_q_vote'].includes(room.state)) return;
+  if (room.customQ?.active) return;
   const players = room.players || {};
   const connected = Object.entries(players).filter(([,p]) => p.connected !== false);
   const allAnswered = connected.every(([id]) => room.answers && room.answers[id] !== undefined);
@@ -1604,6 +1610,8 @@ function checkAutoAdvance(room) {
 /* ========== ADVANCE TO RESULT (com streaks e pontos dobrados) ========== */
 async function advanceToResult(room) {
   if (!isHost || room.state !== 'question') return;
+  // Extra guard: never fire during active custom question
+  if (room.customQ?.active) return;
   const players = room.players || {};
   const updates = { state: 'question_result' };
   // Preencher sem resposta com -1
@@ -2186,18 +2194,24 @@ async function activateBoom() {
   const me = localRoom.players?.[myId];
   if (!me?.powerUps?.boom) return;
   playSound('boom');
-  // Save the state we're interrupting so we can restore it after
+  // Pause all local timers immediately
+  stopTimer();
+  stopThemeTimer();
+  // Save what we're interrupting
   const prevState = localRoom.state;
   const prevQIdx = localRoom.qIdx;
-  const prevQEnd = localRoom.qEnd;
   const prevTheme = localRoom.theme;
   const prevLastTheme = localRoom.lastTheme;
+  // Set qEnd to far future to prevent host timer from advancing question
+  // during the custom Q creation phase
+  const farFuture = Date.now() + 999999;
   await update(roomRef, {
+    qEnd: farFuture,          // freeze the question timer for everyone
     state: 'custom_q_create',
     customQ: {
       creatorId: myId, question:'', options:['','','',''], correct:-1,
       answers:{}, skips:[], active:true,
-      prevState, prevQIdx, prevQEnd: Date.now() + ANSWER_TIME * 1000,
+      prevState, prevQIdx,
       prevTheme, prevLastTheme
     }
   });
@@ -2271,22 +2285,31 @@ function renderCustomQVote(room) {
   const cq = room.customQ;
   if (!cq || !cq.active) return;
   const vKey = cq.question;
-  if (cqVoteKey === vKey && room.customQ?.creatorId !== myId) {
-    // Update skip count
+  if (cqVoteKey === vKey) {
+    // Update for ALL players (both creator and voters)
     const skips = cq.skips || [];
     const totalVoters = Object.keys(room.players||{}).length - 1;
-    document.getElementById('cq-skip-count').textContent = `${skips.length}/${totalVoters} querem pular`;
-    // Update player status
+    const skipEl = document.getElementById('cq-skip-count');
+    if (skipEl) skipEl.textContent = `${skips.length}/${totalVoters} querem pular`;
     renderCQPlayersStatus(room);
-    // Host check: all answered or time up → resolve
+    // Update vote buttons: if I already answered, show my selection
+    if (cq.answers && cq.answers[myId] !== undefined && myId !== cq.creatorId) {
+      document.querySelectorAll('#cq-vote-options .option-btn').forEach((b,i) => {
+        b.disabled = true;
+        if (i === cq.answers[myId]) b.classList.add('selected');
+      });
+    }
     if (isHost) checkCQAutoAdvance(room);
     return;
   }
   cqVoteKey = vKey;
+  cqAnswered = false; // reset per question
   showScreen('custom-q-vote');
   const creator = room.players?.[cq.creatorId];
+  const isCreator = myId === cq.creatorId;
   document.getElementById('cq-vote-author').textContent = `💥 ${esc(creator?.name || '???')} criou uma pergunta!`;
   document.getElementById('cq-vote-question').textContent = cq.question || '...';
+
   const optGrid = document.getElementById('cq-vote-options');
   optGrid.innerHTML = '';
   if (cq.options && cq.options.length) {
@@ -2294,19 +2317,25 @@ function renderCustomQVote(room) {
       const btn = document.createElement('button');
       btn.className = 'option-btn';
       btn.innerHTML = `<span class="opt-letter">${['A','B','C','D'][i]}</span><span>${esc(opt)}</span>`;
-      if (myId === cq.creatorId) { btn.disabled = true; }
-      else btn.onclick = () => submitCQAnswer(i);
+      if (isCreator) {
+        // Creator sees options but can't click — they watch others answer
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+      } else {
+        btn.onclick = () => submitCQAnswer(i);
+      }
       optGrid.appendChild(btn);
     });
   }
+
+  // Skip button: visible for voters only
   const skipBtn = document.getElementById('cq-skip-btn');
-  skipBtn.style.display = myId === cq.creatorId ? 'none' : 'inline-flex';
+  if (skipBtn) skipBtn.style.display = isCreator ? 'none' : 'inline-flex';
+
   renderCQPlayersStatus(room);
-  if (isHost) {
-    // Start local timer display
-    startCQTimer(room);
-    checkCQAutoAdvance(room);
-  }
+  // Timer shown to EVERYONE (host drives, all see countdown)
+  startCQTimer(room);
+  if (isHost) checkCQAutoAdvance(room);
 }
 
 function renderCQPlayersStatus(room) {
@@ -2343,22 +2372,28 @@ window.skipCustomQuestion = async function() {
   toast('Voto de pular registrado','ok');
 };
 
+let cqTimerTickInterval = null;
 function startCQTimer(room) {
-  // Show a small countdown in the vote screen
   const cq = room.customQ || {};
   if (!cq.qEnd) return;
+  // Clear any existing timer
+  if (cqTimerTickInterval) { clearInterval(cqTimerTickInterval); cqTimerTickInterval = null; }
   let timerEl = document.getElementById('cq-vote-timer');
   if (!timerEl) {
     timerEl = document.createElement('div');
     timerEl.id = 'cq-vote-timer';
-    timerEl.style.cssText = 'font-family:Orbitron,monospace;font-size:.8rem;color:var(--text3);text-align:center;margin-top:4px';
+    timerEl.style.cssText = 'font-family:"Orbitron",monospace;font-size:1.1rem;font-weight:700;color:var(--gold);text-align:center;margin:6px 0;';
     const skipCount = document.getElementById('cq-skip-count');
-    skipCount?.parentNode?.insertBefore(timerEl, skipCount);
+    if (skipCount?.parentNode) skipCount.parentNode.insertBefore(timerEl, skipCount);
+    else document.getElementById('cq-players-status')?.before(timerEl);
   }
-  const tick = setInterval(() => {
+  cqTimerTickInterval = setInterval(() => {
     const rem = Math.max(0, Math.ceil((cq.qEnd - Date.now()) / 1000));
-    if (timerEl) timerEl.textContent = rem > 0 ? `⏳ ${rem}s` : '';
-    if (rem <= 0) clearInterval(tick);
+    if (timerEl) {
+      timerEl.textContent = rem > 0 ? `⏳ ${rem}s` : '⌛ Tempo esgotado!';
+      timerEl.style.color = rem <= 5 ? 'var(--red)' : 'var(--gold)';
+    }
+    if (rem <= 0) { clearInterval(cqTimerTickInterval); cqTimerTickInterval = null; }
   }, 500);
 }
 
@@ -2376,6 +2411,54 @@ function checkCQAutoAdvance(room) {
     pendingAdvance = true;
     setTimeout(() => { resolveCustomQ(room); pendingAdvance = false; }, 500);
   }
+}
+
+function renderCustomQResult(room) {
+  const cq = room.customQ || {};
+  showScreen('custom-q-vote'); // reuse this screen
+  const creator = room.players?.[cq.creatorId];
+  document.getElementById('cq-vote-author').textContent = `💥 Resultado da Pergunta de ${esc(creator?.name || '???')}`;
+  document.getElementById('cq-vote-question').textContent = cq.question || '';
+  // Show correct answer highlighted
+  const optGrid = document.getElementById('cq-vote-options');
+  optGrid.innerHTML = '';
+  if (cq.options) {
+    cq.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.disabled = true;
+      if (i === cq.correct) btn.classList.add('correct');
+      else {
+        // Check if I answered this wrong
+        const myAns = cq.answers?.[myId];
+        if (myAns === i && i !== cq.correct) btn.classList.add('wrong');
+      }
+      btn.innerHTML = `<span class="opt-letter">${['A','B','C','D'][i]}</span><span>${esc(opt)}</span>`;
+      optGrid.appendChild(btn);
+    });
+  }
+  // Show score results
+  const players = room.players || {};
+  const ps = document.getElementById('cq-players-status');
+  ps.innerHTML = '';
+  const voters = Object.keys(players).filter(id => id !== cq.creatorId);
+  voters.forEach(id => {
+    const p = players[id];
+    const result = cq.result?.[id];
+    const correct = result === 'correct';
+    const div = document.createElement('div');
+    div.className = 'ps-player' + (correct ? ' answered' : '');
+    div.innerHTML = `<div class="ps-dot"></div><span style="color:${p.color}">${p.emoji}</span><span>${esc(p.name)}</span><span style="margin-left:auto;font-size:.75rem;color:${correct?'var(--green)':'var(--red)'};">${correct?'+1':result==='wrong'?'-1':'⏰'}</span>`;
+    ps.appendChild(div);
+  });
+  // Show creator bonus
+  const bonus = cq.creatorBonus || 0;
+  const skipEl = document.getElementById('cq-skip-count');
+  if (skipEl) skipEl.textContent = `${esc(creator?.name||'?')} ganhou +${Math.max(1,bonus)} ponto${Math.max(1,bonus)>1?'s':''}! 🎉`;
+  const skipBtn = document.getElementById('cq-skip-btn');
+  if (skipBtn) skipBtn.style.display = 'none';
+  const timerEl = document.getElementById('cq-vote-timer');
+  if (timerEl) timerEl.textContent = '🔄 Voltando ao jogo...';
 }
 
 async function resolveCustomQ(room) {
@@ -2396,6 +2479,7 @@ async function resolveCustomQ(room) {
       themeScreenState = '';
       await update(roomRef, { state:'theme_select', 'customQ/active':false, answers:{} });
     } else {
+      questionKey = ''; hasAnswered = false; timerShortened = false;
       await update(roomRef, { state:'question', 'customQ/active':false, answers:{}, qEnd:Date.now()+ANSWER_TIME*1000 });
     }
     return;
@@ -2404,43 +2488,51 @@ async function resolveCustomQ(room) {
   let creatorBonus = 0;
   voters.forEach(id => {
     const ans = cq.answers?.[id];
-    if (ans === undefined || ans === -1) return; // no answer
-    const correct = ans === cq.correct;
-    if (!correct) {
+    const correct = ans !== undefined && ans !== -1 && ans === cq.correct;
+    const wrong = ans !== undefined && ans !== -1 && ans !== cq.correct;
+    if (wrong) {
       creatorBonus++;
-      // voter loses a point (same as normal wrong)
       const p = players[id];
       if (p && p.score > 0) updates[`players/${id}/score`] = Math.max(0, p.score - 1);
-    } else {
-      // voter got it right — gains 1 point
+    } else if (correct) {
       const p = players[id];
       if (p) updates[`players/${id}/score`] = (p.score || 0) + 1;
     }
+    // Store result for display
+    updates[`customQ/result/${id}`] = correct ? 'correct' : (wrong ? 'wrong' : 'noanswer');
   });
   // Creator gains creatorBonus (min 1)
   const creatorScore = (creator?.score || 0) + Math.max(1, creatorBonus);
   updates[`players/${cq.creatorId}/score`] = creatorScore;
-
-  // Restore previous game state
-  const prev = cq.prevState || 'question';
-  cqVoteKey = '';
-  cqAnswered = false;
-
-  if (prev === 'theme_select') {
-    // Back to theme selection — reset theme timer
-    updates.state = 'theme_select';
-    updates['customQ/active'] = false;
-    updates.answers = {};
-    // Reset themeScreenState so it re-renders
-    themeScreenState = '';
-  } else {
-    // Back to question (or question_result) — restart timer for current question
-    updates.state = 'question';
-    updates.answers = {};
-    updates.qEnd = Date.now() + ANSWER_TIME * 1000;
-    updates['customQ/active'] = false;
-  }
+  updates['customQ/creatorBonus'] = creatorBonus;
+  // Show result screen first, then restore after 4 seconds
+  updates.state = 'custom_q_result';
+  updates['customQ/active'] = false;
   await update(roomRef, updates);
+  // After 4s, restore previous state
+  setTimeout(async () => {
+    if (!localRoom) return;
+    const prev = localRoom.customQ?.prevState || 'question';
+    cqVoteKey = '';
+    cqAnswered = false;
+    if (cqTimerTickInterval) { clearInterval(cqTimerTickInterval); cqTimerTickInterval = null; }
+    const restore = {};
+    if (prev === 'theme_select') {
+      themeScreenState = '';
+      restore.state = 'theme_select';
+      restore.answers = {};
+      restore['customQ'] = null;
+    } else {
+      questionKey = '';
+      hasAnswered = false;
+      timerShortened = false;
+      restore.state = 'question';
+      restore.answers = {};
+      restore.qEnd = Date.now() + ANSWER_TIME * 1000;
+      restore['customQ'] = null;
+    }
+    await update(roomRef, restore);
+  }, 4000);
 }
 
 /* ========== POWER-UP: 🥷 Steal ========== */
