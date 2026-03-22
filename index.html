@@ -304,6 +304,10 @@ h3{font-size:1rem;font-weight:700;color:var(--text2)}
 
 <div id="stars"></div>
 <div id="score-bar"></div>
+<button id="mute-btn" onclick="toggleMute()" title="Mutar voz"
+  style="position:fixed;top:6px;right:10px;z-index:60;background:rgba(6,6,26,.85);
+  border:1px solid rgba(255,215,0,.25);border-radius:8px;color:#fff;font-size:1rem;
+  padding:4px 8px;cursor:pointer;backdrop-filter:blur(4px);line-height:1;display:none">🔊</button>
 
 <div id="app">
 
@@ -1707,17 +1711,21 @@ async function advanceToResult(room) {
       baseDelta = p.score > 0 ? -1 : 0;
     }
 
-    // ⭐ Star power-up: double next correct answer
+    // ⭐ Star: +2 only for THIS player when they answer correctly
     const hasStar = (p.powerUps?.star || 0) > 0;
-    if (hasStar && correct) {
-      baseDelta = 2;
-      updates[`players/${id}/powerUps/star`] = Math.max(0, (p.powerUps?.star||0) - 1);
-    }
+    let finalDelta = baseDelta; // baseDelta is 1 for correct, -1 for wrong, 0 for noAnswer
 
-    // 🔥 Streak double
-    let finalDelta = baseDelta;
-    if (correct && !hasStar && currentStreak >= 3) finalDelta = 2;
-    if (!correct && currentStreak <= -3) {
+    if (correct) {
+      if (hasStar) {
+        // Star gives flat +2 (overrides streak bonus)
+        finalDelta = 2;
+        updates[`players/${id}/powerUps/star`] = Math.max(0, (p.powerUps?.star||0) - 1);
+      } else if (currentStreak >= 3) {
+        // 🔥 Streak double: only if no star
+        finalDelta = 2;
+      }
+    } else if (!correct && currentStreak <= -3) {
+      // 💧 Water penalty
       finalDelta = p.score >= 2 ? -2 : (p.score > 0 ? -1 : 0);
     }
 
@@ -1930,8 +1938,17 @@ function renderScoreboard(room, elId) {
 function updateScoreBar(room) {
   renderPowerUpBar(room);
   const bar = document.getElementById('score-bar');
-  if (room.state === 'lobby' || room.state === 'drawing') { bar.classList.remove('visible'); return; }
+  const muteBtn = document.getElementById('mute-btn');
+  if (room.state === 'lobby' || room.state === 'drawing') {
+    bar.classList.remove('visible');
+    if (muteBtn) muteBtn.style.display = 'none';
+    return;
+  }
   bar.classList.add('visible');
+  if (muteBtn) {
+    muteBtn.style.display = 'block';
+    muteBtn.textContent = voiceMuted ? '🔇' : '🔊';
+  }
   bar.innerHTML = '';
   const players = Object.entries(room.players || {}).sort((a,b) => b[1].score - a[1].score);
   players.forEach(([id, p]) => {
@@ -1979,8 +1996,10 @@ function stopTimer() { if (timerInterval) { clearInterval(timerInterval); timerI
 function stopThemeTimer() { if (themeTimerInterval) { clearInterval(themeTimerInterval); themeTimerInterval = null; } }
 
 /* ========== VOICE ========== */
+let voiceMuted = localStorage.getItem('qsb_muted') === '1';
+
 function speak(text) {
-  if (!window.speechSynthesis) return;
+  if (!window.speechSynthesis || voiceMuted) return;
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'pt-BR'; u.rate = 1.05; u.pitch = 1.1;
@@ -1989,6 +2008,15 @@ function speak(text) {
   if (ptBR) u.voice = ptBR;
   window.speechSynthesis.speak(u);
 }
+
+window.toggleMute = function() {
+  voiceMuted = !voiceMuted;
+  localStorage.setItem('qsb_muted', voiceMuted ? '1' : '0');
+  if (voiceMuted && window.speechSynthesis) window.speechSynthesis.cancel();
+  const btn = document.getElementById('mute-btn');
+  if (btn) btn.textContent = voiceMuted ? '🔇' : '🔊';
+  btn && btn.setAttribute('title', voiceMuted ? 'Ativar voz' : 'Mutar voz');
+};
 
 /* ========== CONFETTI ========== */
 function launchConfetti() {
@@ -2113,21 +2141,28 @@ function checkFloatingStar(room) {
   const activeStates = ['question','theme_select','round_summary'];
   // ⭐ Star
   const fs = room.floatingStar;
-  if (fs && fs.id !== lastStarId && activeStates.includes(room.state)) {
+  if (fs && fs.id !== lastStarId && !fs.claimedBy && activeStates.includes(room.state)) {
     lastStarId = fs.id;
     spawnFloatingPUUI('⭐', fs.id, 'star', '#FFD700', el => collectStar(fs.id, el));
+  } else if (!fs && lastStarId) {
+    // Claimed — remove any lingering UI element
+    document.querySelectorAll('[id^="pu-float-star-"]').forEach(e => e.remove());
   }
   // 💥 Boom
   const fb = room.floatingBoom;
-  if (fb && fb.id !== lastBoomId && activeStates.includes(room.state)) {
+  if (fb && fb.id !== lastBoomId && !fb.claimedBy && activeStates.includes(room.state)) {
     lastBoomId = fb.id;
     spawnFloatingPUUI('💥', fb.id, 'boom', '#FF4DB8', el => collectBoomFloat(fb.id, el));
+  } else if (!fb) {
+    document.querySelectorAll('[id^="pu-float-boom-"]').forEach(e => e.remove());
   }
   // 🥷 Ninja
   const fn = room.floatingNinja;
-  if (fn && fn.id !== lastNinjaId && activeStates.includes(room.state)) {
+  if (fn && fn.id !== lastNinjaId && !fn.claimedBy && activeStates.includes(room.state)) {
     lastNinjaId = fn.id;
     spawnFloatingPUUI('🥷', fn.id, 'ninja', '#00E5FF', el => collectNinjaFloat(fn.id, el));
+  } else if (!fn) {
+    document.querySelectorAll('[id^="pu-float-ninja-"]').forEach(e => e.remove());
   }
 }
 
@@ -2147,51 +2182,72 @@ function spawnFloatingPUUI(emoji, id, type, color, onCollect) {
   setTimeout(() => el.remove(), 7000);
 }
 
-let collectingFloat = false; // prevent double-collect
-async function collectStar(starId, el) {
+// Each float has a Firebase "claimedBy" field. First writer wins.
+// collectingFloat is a per-client debounce only.
+let collectingFloat = false;
+
+async function collectFloat(type, floatId, el, fbKey, puUpdates, toastMsg, sound) {
   if (!roomRef || !localRoom || collectingFloat) return;
+  // Immediately disable so double-click impossible
   collectingFloat = true;
-  el.style.transition = 'transform .25s, opacity .25s';
-  el.style.transform = 'scale(2.5)';
-  el.style.opacity = '0';
-  setTimeout(() => { el.remove(); collectingFloat = false; }, 350);
-  const me = localRoom.players?.[myId];
+  el.onclick = null;
+  el.style.pointerEvents = 'none';
+  // Atomically claim: set claimedBy — Firebase last-write-wins but the
+  // UI hides the element for everyone via onValue after floatingStar→null
+  try {
+    // Set claimedBy first so others see it's gone on next sync
+    const claimUpdate = {};
+    claimUpdate[fbKey + '/claimedBy'] = myId;
+    await update(roomRef, claimUpdate);
+    // Re-read to confirm we got it (first writer wins heuristic)
+    const snap = await get(ref(db, `rooms/${roomId}/${fbKey}`));
+    if (!snap.exists() || snap.val()?.claimedBy !== myId) {
+      // Someone else beat us
+      collectingFloat = false;
+      el.style.pointerEvents = 'auto';
+      return;
+    }
+    // We won — animate and grant
+    el.style.transition = 'transform .25s, opacity .25s';
+    el.style.transform = 'scale(2.5)';
+    el.style.opacity = '0';
+    setTimeout(() => { el.remove(); }, 350);
+    playSound(sound);
+    // Grant power-up and remove float from Firebase
+    const puRef = ref(db, `rooms/${roomId}/players/${myId}/powerUps`);
+    await update(puRef, puUpdates);
+    const nullUpdate = {}; nullUpdate[fbKey] = null;
+    await update(roomRef, nullUpdate);
+    toast(toastMsg, 'ok');
+  } catch(e) { console.error(e); }
+  setTimeout(() => { collectingFloat = false; }, 500);
+}
+
+async function collectStar(starId, el) {
+  const me = localRoom?.players?.[myId];
   const cur = me?.powerUps?.star || 0;
-  playSound('star');
-  await update(ref(db, `rooms/${roomId}/players/${myId}/powerUps`), { star: cur + 1 });
-  await update(roomRef, { floatingStar: null });
-  toast('⭐ Dobro na próxima pergunta!', 'ok');
+  await collectFloat('star', starId, el, 'floatingStar',
+    { star: cur + 1 }, '⭐ Dobro na próxima pergunta!', 'star');
 }
 
 async function collectBoomFloat(boomId, el) {
-  if (!roomRef || !localRoom || collectingFloat) return;
-  collectingFloat = true;
-  el.style.transition = 'transform .25s, opacity .25s';
-  el.style.transform = 'scale(2.5)';
-  el.style.opacity = '0';
-  setTimeout(() => { el.remove(); collectingFloat = false; }, 350);
-  const me = localRoom.players?.[myId];
+  const me = localRoom?.players?.[myId];
   const cur = me?.powerUps?.boom || 0;
-  playSound('boom');
-  await update(ref(db, `rooms/${roomId}/players/${myId}/powerUps`), { boom: cur + 1, boomUsed: false });
-  await update(roomRef, { floatingBoom: null });
-  toast('💥 Power-up de Pergunta coletado!', 'ok');
+  await collectFloat('boom', boomId, el, 'floatingBoom',
+    { boom: cur + 1, boomUsed: false }, '💥 Power-up de Pergunta coletado!', 'boom');
 }
 
 async function collectNinjaFloat(ninjaId, el) {
-  if (!roomRef || !localRoom || collectingFloat) return;
-  collectingFloat = true;
-  el.style.transition = 'transform .25s, opacity .25s';
-  el.style.transform = 'scale(2.5)';
-  el.style.opacity = '0';
-  setTimeout(() => { el.remove(); collectingFloat = false; }, 350);
-  const me = localRoom.players?.[myId];
+  const me = localRoom?.players?.[myId];
   const cur = me?.powerUps?.ninja || 0;
-  playSound('ninja');
-  await update(ref(db, `rooms/${roomId}/players/${myId}/powerUps`), { ninja: cur + 1 });
-  await update(roomRef, { floatingNinja: null });
-  toast('🥷 Power-up de Roubo coletado!', 'ok');
+  await collectFloat('ninja', ninjaId, el, 'floatingNinja',
+    { ninja: cur + 1 }, '🥷 Power-up de Roubo coletado!', 'ninja');
 }
+
+// Stub to remove old partial function below
+function _old_ninja_stub() {
+  const me = localRoom.players?.[myId];
+} // end _old_ninja_stub
 
 /* ========== POWER-UP: 💥 Custom Question ========== */
 async function activateBoom() {
@@ -2199,10 +2255,20 @@ async function activateBoom() {
   const me = localRoom.players?.[myId];
   if (!me?.powerUps?.boom) return;
   playSound('boom');
-  // Set state to custom_q_create, mark creator
+  // Save the state we're interrupting so we can restore it after
+  const prevState = localRoom.state;
+  const prevQIdx = localRoom.qIdx;
+  const prevQEnd = localRoom.qEnd;
+  const prevTheme = localRoom.theme;
+  const prevLastTheme = localRoom.lastTheme;
   await update(roomRef, {
     state: 'custom_q_create',
-    customQ: { creatorId: myId, question:'', options:['','','',''], correct:-1, answers:{}, skips:[], active:true }
+    customQ: {
+      creatorId: myId, question:'', options:['','','',''], correct:-1,
+      answers:{}, skips:[], active:true,
+      prevState, prevQIdx, prevQEnd: Date.now() + ANSWER_TIME * 1000,
+      prevTheme, prevLastTheme
+    }
   });
 }
 
@@ -2392,14 +2458,15 @@ async function resolveCustomQ(room) {
   const skipMajority = skips.length >= Math.ceil(voters.length / 2);
 
   if (skipMajority) {
-    // Question skipped — creator gets nothing, no one loses points
     toast('Pergunta pulada pela maioria!','err');
-    await update(roomRef, { ...updates,
-      state: 'question',
-      qIdx: room.qIdx,
-      answers: {},
-      qEnd: Date.now() + ANSWER_TIME * 1000
-    });
+    cqVoteKey = ''; cqAnswered = false;
+    const prev = cq.prevState || 'question';
+    if (prev === 'theme_select') {
+      themeScreenState = '';
+      await update(roomRef, { state:'theme_select', 'customQ/active':false, answers:{} });
+    } else {
+      await update(roomRef, { state:'question', 'customQ/active':false, answers:{}, qEnd:Date.now()+ANSWER_TIME*1000 });
+    }
     return;
   }
 
@@ -2422,11 +2489,26 @@ async function resolveCustomQ(room) {
   // Creator gains creatorBonus (min 1)
   const creatorScore = (creator?.score || 0) + Math.max(1, creatorBonus);
   updates[`players/${cq.creatorId}/score`] = creatorScore;
-  updates.state = 'question';
-  updates.answers = {};
-  updates.qEnd = Date.now() + ANSWER_TIME * 1000;
+
+  // Restore previous game state
+  const prev = cq.prevState || 'question';
   cqVoteKey = '';
   cqAnswered = false;
+
+  if (prev === 'theme_select') {
+    // Back to theme selection — reset theme timer
+    updates.state = 'theme_select';
+    updates['customQ/active'] = false;
+    updates.answers = {};
+    // Reset themeScreenState so it re-renders
+    themeScreenState = '';
+  } else {
+    // Back to question (or question_result) — restart timer for current question
+    updates.state = 'question';
+    updates.answers = {};
+    updates.qEnd = Date.now() + ANSWER_TIME * 1000;
+    updates['customQ/active'] = false;
+  }
   await update(roomRef, updates);
 }
 
